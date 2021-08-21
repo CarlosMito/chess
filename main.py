@@ -8,7 +8,7 @@ from game.surfaces import *
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Chess')
-    screen = pygame.display.set_mode((400, 400))
+    screen = pygame.display.set_mode((800, 500))
 
     board = BoardSurface(screen, 8, 1)
 

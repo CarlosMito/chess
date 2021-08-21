@@ -1,5 +1,12 @@
 import pygame
+from pygame.constants import CONTROLLER_BUTTON_MAX
 from game.models import *
+from enum import Enum
+
+
+class Colors(Enum):
+    WHITE = (240, 240, 240)
+    BLACK = (90, 152, 166)
 
 
 class BoardSurface(Board):
@@ -14,13 +21,16 @@ class BoardSurface(Board):
              size * BoardSurface.DEFAULT_SQUARE)
         )
 
-        pygame.draw.rect(
-            self.surface,
-            (255, 255, 255),
-            (200, 200, 200, 200)
-        )
+        for i, row in enumerate(self._matrix):
+            for j, column in enumerate(row):
+                self._matrix[i][j] = pygame.draw.rect(
+                    self.surface,
+                    Colors.BLACK.value if (i + j) % 2 else Colors.WHITE.value,
+                    (BoardSurface.DEFAULT_SQUARE * i, BoardSurface.DEFAULT_SQUARE *
+                     j, BoardSurface.DEFAULT_SQUARE, BoardSurface.DEFAULT_SQUARE)
+                )
 
-        # pygame.Surface.blit(self.surface, parent)
+        parent.blit(self.surface, (0, 0))
 
         pass
 
