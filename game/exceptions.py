@@ -1,0 +1,2 @@
+class NonSquareMatrix(Exception):
+    pass
