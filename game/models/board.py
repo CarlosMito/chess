@@ -1,21 +1,42 @@
 from utils.matrix import Matrix
+from utils.exceptions import *
+from game.models.piece import *
 
 
 class Board:
-    def __init__(self, size=8):
-        self._size = size
-        self._matrix = Matrix(size, size)
+    def __init__(self, squares=8):
+        if squares < 4:
+            raise TooFewBoardSquares
 
-    def get_size(self):
-        return self._size
+        self.__squares = squares
+        self.__board = Matrix(squares, squares)
 
-    def set_size(self, size):
-        self._matrix = Matrix(size, size)
+        self.pieces = {
+            'black': [],
+            'white': []
+        }
 
-    def __repr__(self):
-        string = ''
+        self.reset()
 
-        for row in self._matrix:
-            string += str(row) + '\n'
+    def reset(self):
+        for key in self.pieces:
+            self.pieces[key].clear()
+            for column in range(self.__squares):
+                row = 1 if key == 'white' else self.__squares - 2
+                self.__board.set_element(row, column, Pawn(key))
 
-        return string
+    @property
+    def board(self):
+        return self.__board
+
+    @property
+    def squares(self):
+        return self.__squares
+
+    @squares.setter
+    def squares(self, squares):
+        if (self.__squares < 4):
+            raise TooFewBoardSquares
+
+        self.__board.rows = squares
+        self.__board.columns = squares

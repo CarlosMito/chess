@@ -12,7 +12,15 @@ class Matrix:
         self.__matrix = [[default for _ in range(columns)]
                          for _ in range(rows)]
 
-    def set_rows(self, rows):
+    def set_element(self, i, j, element):
+        self.__matrix[i][j] = element
+
+    @property
+    def rows(self):
+        return self.__rows
+
+    @rows.setter
+    def rows(self, rows):
         if rows < 1:
             raise InvalidSize((rows, self.__columns))
 
@@ -28,10 +36,12 @@ class Matrix:
 
             self.__rows = rows
 
-    def get_rows(self):
-        return self.__rows
+    @property
+    def columns(self):
+        return self.__columns
 
-    def set_columns(self, columns):
+    @columns.setter
+    def columns(self, columns):
         if columns < 1:
             raise InvalidSize((self.__rows, columns))
 
@@ -48,13 +58,12 @@ class Matrix:
 
             self.__columns = columns
 
-    def get_columns(self):
-        return self.__columns
-
-    def get_matrix(self):
+    @property
+    def matrix(self):
         return [[x for x in row] for row in self.__matrix]
 
-    def set_matrix(self, matrix):
+    @matrix.setter
+    def matrix(self, matrix):
         rows = len(matrix)
 
         if not rows:

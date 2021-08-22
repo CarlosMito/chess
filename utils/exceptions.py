@@ -7,6 +7,11 @@ class InvalidMatrix(Exception):
         super().__init__(message)
 
 
+class TooFewBoardSquares(Exception):
+    def __init__(self, message='There\'s too few squares on the board'):
+        super().__init__(message)
+
+
 class InvalidSize(Exception):
     def __init__(self, size, message='Both dimensions must be greater than 0'):
         super().__init__(message)

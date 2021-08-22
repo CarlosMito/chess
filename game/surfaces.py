@@ -11,41 +11,20 @@ class Colors(Enum):
 
 
 class BoardSurface(Board):
-    DEFAULT_SQUARE = 50
+    def __init__(self, parent, squares, size=50):
+        super().__init__(squares=squares)
 
-    def __init__(self, parent, size, ratio):
-        super().__init__(size=size)
+        self.size = size
+        self.surface = pygame.Surface((squares * size, squares * size))
 
-        self.ratio = ratio
-        self.surface = pygame.Surface(
-            (size * BoardSurface.DEFAULT_SQUARE,
-             size * BoardSurface.DEFAULT_SQUARE)
-        )
-
-        self.pieces = {
-            'black': [],
-            'white': []
-        }
-
-        for i, row in enumerate(self._matrix):
+        for i, row in enumerate(self.board.matrix):
             for j, column in enumerate(row):
-                self._matrix[i][j] = pygame.draw.rect(
+                pygame.draw.rect(
                     self.surface,
                     Colors.BLUE.value if (i + j) % 2 else Colors.WHITE.value,
-                    (BoardSurface.DEFAULT_SQUARE * i, BoardSurface.DEFAULT_SQUARE *
-                     j, BoardSurface.DEFAULT_SQUARE, BoardSurface.DEFAULT_SQUARE)
-                )
-
-        self.reset()
+                    (size * i, size * j, size, size))
 
         parent.blit(self.surface, (0, 0))
-
-    def reset(self):
-        for key in self.pieces:
-            self.pieces[key].clear()
-            for column in range(self._size):
-                row = 1 if key == 'white' else 6
-                self.pieces[key].append(Pawn(key))
 
     def update():
         pass
