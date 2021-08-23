@@ -14,7 +14,8 @@ if __name__ == '__main__':
     pygame.display.set_caption('Chess')
     screen = pygame.display.set_mode((800, 500))
 
-    board = BoardSurface(screen, 8)
+    board = BoardSurface(screen)
+    print(board.board)
 
     while True:
         for event in pygame.event.get():

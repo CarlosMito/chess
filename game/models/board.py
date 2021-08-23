@@ -19,11 +19,38 @@ class Board:
         self.reset()
 
     def reset(self):
-        for key in self.pieces:
-            self.pieces[key].clear()
+        for color in self.pieces:
+            self.pieces[color].clear()
             for column in range(self.__squares):
-                row = 1 if key == 'white' else self.__squares - 2
-                self.__board.set_element(row, column, Pawn(key))
+                row = 0 if color == 'white' else self.__squares - 1
+                king = King(color)
+                queen = Queen(color)
+                self.__board.set_element(row, self.squares // 2 - 1, king)
+                self.__board.set_element(row, self.squares // 2, queen)
+                self.pieces[color].append(king)
+                self.pieces[color].append(queen)
+
+                # Somente para testes
+                r1 = Rook(color)
+                r2 = Rook(color)
+                b1 = Bishop(color)
+                b2 = Bishop(color)
+                n1 = Knight(color)
+                n2 = Knight(color)
+
+                self.__board.set_element(row, 0, r1)
+                self.__board.set_element(row, 7, r2)
+                self.__board.set_element(row, 1, n1)
+                self.__board.set_element(row, 6, n2)
+                self.__board.set_element(row, 2, b1)
+                self.__board.set_element(row, 5, b2)
+
+                self.pieces[color].extend([r1, r2, b1, b2, n1, n2])
+
+                row += 1 if color == 'white' else -1
+                piece = Pawn(color)
+                self.__board.set_element(row, column, piece)
+                self.pieces[color].append(piece)
 
     @property
     def board(self):
