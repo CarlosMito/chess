@@ -73,12 +73,15 @@ class Board:
 
     @property
     def occupied_squares(self):
-        squares = []
+        squares = {
+            'black': [],
+            'white': []
+        }
 
-        for row in self.__board.matrix:
-            for square in row:
-                if square is not None:
-                    squares.append(square)
+        for i, row in enumerate(self.__board.matrix):
+            for j, piece in enumerate(row):
+                if piece is not None:
+                    squares[piece.color].append((i, j))
 
         return squares
 

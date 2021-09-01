@@ -28,7 +28,12 @@ class BoardSurface(Board):
         self.images = []
 
         self.__selected = None
-        self.__moves = []
+        self.__possible_moves = []
+
+        # Utilizado quando o jogador tenta colocar a peça em um lugar
+        # que a mesma não alcança, nesse caso, ela volta para a casa
+        # onde ela estava.
+        self.__backup = (0, 0)
 
         self.surface = pygame.Surface((squares * size, squares * size))
 
@@ -74,9 +79,11 @@ class BoardSurface(Board):
 
             if -1 < i < 8 and -1 < j < 8:
                 if self.board.matrix[i][j] is not None:
+                    self.__backup = (i, j)
                     self.__selected = self.board.matrix[i][j]
                     self.board.set_element(i, j, None)
-                    self.__moves = self.__selected.possible_moves((i, j), self)
+                    self.__possible_moves = self.__selected.possible_moves(
+                        (i, j), self)
 
     def unselect(self, position):
         if self.__selected:
@@ -84,13 +91,28 @@ class BoardSurface(Board):
             j = position[0] // self.size
 
             if -1 < i < 8 and -1 < j < 8:
-                self.board.set_element(i, j, self.__selected)
+                # [possible_moves] inclui casas fora do tabuleiro.
+                # A condição acima faz o tratamento desse problema
+                # Estou pensando em alterar a estrutura do código, então
+                # qualquer coisa, lembrar de realizar essa condição em outro lugar
+
+                if (i, j) in self.__possible_moves:
+                    self.board.set_element(i, j, self.__selected)
+                    if type(self.__selected) is Pawn:
+                        self.__selected.first_move = False
+                else:
+                    self.board.set_element(
+                        self.__backup[0],
+                        self.__backup[1],
+                        self.__selected
+                    )
+
                 self.__selected = None
-                self.__moves = []
+                self.__possible_moves = []
 
     def draw_moves(self):
         border_width = 1
-        for move in self.__moves:
+        for move in self.__possible_moves:
             x = self.size * move[1]
             y = self.size * move[0]
 
