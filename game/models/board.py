@@ -109,12 +109,12 @@ class Board:
             if square != position:
                 piece = self.board.matrix[position[0]][position[1]]
 
-                if square in piece.calculate_moves(position, self):
-                    return False
-
                 if type(piece) is Pawn:
                     if square in piece.calculate_takes(position, self):
                         return False
+
+                elif square in piece.calculate_moves(position, self):
+                    return False
 
         return True
 
