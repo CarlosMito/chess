@@ -35,6 +35,7 @@ class BoardSurface(Board):
         # que a mesma não alcança, nesse caso, ela volta para a casa
         # onde ela estava.
         self.__backup = (0, 0)
+        self.__possible = []
 
         self.surface = pygame.Surface((squares * size, squares * size))
 
@@ -85,19 +86,23 @@ class BoardSurface(Board):
                     self.board.set_element(i, j, None)
 
                     piece = self.__selected
-                    piece.calculate_actions((i, j), self)
-                    # self.__possible_moves = self.__selected.possible_moves(
-                    # (i, j), self)
+                    self.__possible = piece.calculate_moves((i, j), self)
+
+                    for move in self.__possible[::]:
+                        if move in self.occupied_squares[piece.color]:
+                            self.__possible.remove(move)
 
                     if type(piece) is Pawn:
-                        for square in piece.takes:
-                            if square in self.occupied_squares[piece.opponent]:
-                                piece.moves.append(square)
+                        possible_takes = piece.calculate_takes((i, j), self)
 
-                    if type(piece) is King:
-                        for square in piece.moves[::]:
+                        for take in possible_takes:
+                            if take in self.occupied_squares[piece.opponent]:
+                                self.__possible.append(take)
+
+                    elif type(piece) is King:
+                        for square in self.__possible[::]:
                             if not self.is_safe(square, piece.color):
-                                piece.moves.remove(square)
+                                self.__possible.remove(square)
 
     def unselect(self, position):
         if self.__selected:
@@ -112,7 +117,7 @@ class BoardSurface(Board):
                 # Estou pensando em alterar a estrutura do código, então
                 # qualquer coisa, lembrar de realizar essa condição em outro lugar
 
-                if (i, j) in piece.moves:
+                if (i, j) in self.__possible:
                     self.board.set_element(i, j, piece)
                     self.next = piece.opponent
 
@@ -131,7 +136,7 @@ class BoardSurface(Board):
         border_width = 1
 
         if self.__selected:
-            for move in self.__selected.moves:
+            for move in self.__possible:
                 x = self.size * move[1]
                 y = self.size * move[0]
 

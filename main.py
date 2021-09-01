@@ -9,6 +9,7 @@ import copy
 
 # TODO: Add Castling
 # TODO: Add En Passant
+# TODO: Add Pawn Promotion
 
 
 class Phone:
