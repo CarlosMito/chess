@@ -70,3 +70,27 @@ class Board:
 
         self.__board.rows = squares
         self.__board.columns = squares
+
+    @property
+    def occupied_squares(self):
+        squares = []
+
+        for row in self.__board.matrix:
+            for square in row:
+                if square is not None:
+                    squares.append(square)
+
+        return squares
+
+    def __repr__(self):
+        string = ''
+
+        for row in self.board.matrix:
+            string += '['
+
+            for piece in row:
+                string += f' {"  " if piece is None else str(piece)} '
+
+            string += ']\n'
+
+        return string

@@ -10,35 +10,33 @@ class Piece(ABC):
         self.isAlive = isAlive
 
     @abstractmethod
-    def project_move(self):
+    def possible_moves(self, position, board):
         pass
 
     def __repr__(self) -> str:
-        return ' ' + self.color[0].upper()
+        return self.color[0].upper()
 
 
 class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color)
         self.name = 'pawn'
+        self.first_move = True
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
 
-    def __repr__(self) -> str:
-        return super().__repr__() + 'P '
+        direction = 1 if self.color == 'white' else -1
+        moves.append((position[0] + 1 * direction, position[1]))
 
+        if self.first_move:
+            moves.append((position[0] + 2 * direction, position[1]))
+            self.first_move = False
 
-class Pawn(Piece):
-    def __init__(self, color):
-        super().__init__(color)
-        self.name = 'pawn'
-
-    def project_move(self):
-        print('Projecting moves...')
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'P '
+        return super().__repr__() + 'P'
 
 
 class King(Piece):
@@ -46,11 +44,12 @@ class King(Piece):
         super().__init__(color)
         self.name = 'king'
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'K '
+        return super().__repr__() + 'K'
 
 
 class Queen(Piece):
@@ -58,11 +57,12 @@ class Queen(Piece):
         super().__init__(color)
         self.name = 'queen'
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'Q '
+        return super().__repr__() + 'Q'
 
 
 class Knight(Piece):
@@ -70,11 +70,12 @@ class Knight(Piece):
         super().__init__(color)
         self.name = 'knight'
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'N '
+        return super().__repr__() + 'N'
 
 
 class Bishop(Piece):
@@ -82,11 +83,12 @@ class Bishop(Piece):
         super().__init__(color)
         self.name = 'bishop'
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'B '
+        return super().__repr__() + 'B'
 
 
 class Rook(Piece):
@@ -94,8 +96,9 @@ class Rook(Piece):
         super().__init__(color)
         self.name = 'rook'
 
-    def project_move(self):
-        print('Projecting moves...')
+    def possible_moves(self, position, board):
+        moves = []
+        return moves
 
     def __repr__(self) -> str:
-        return super().__repr__() + 'R '
+        return super().__repr__() + 'R'

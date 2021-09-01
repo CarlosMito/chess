@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     running = True
     board = BoardSurface(screen)
-    # print(board.board)
+    # print(board)
 
     while running:
         for event in pygame.event.get():
