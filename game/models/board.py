@@ -1,6 +1,15 @@
 from utils.matrix import Matrix
 from utils.exceptions import *
 from game.models.piece import *
+import copy
+
+
+'''
+Adicionar um enum player.black = -1 e player.white = 1
+Adicionar extensão do enum para string
+Verificar se é possível definir uma enum a partir de seu value, exemplo
+-1 * -1 = 1 e definir um enum 1 que seria player.white
+'''
 
 
 class Board:
@@ -11,6 +20,9 @@ class Board:
         self.__squares = squares
         self.__board = Matrix(squares, squares)
 
+        self.next = 'white'
+
+        # Isso aqui tá meio inútil
         self.pieces = {
             'black': [],
             'white': []
@@ -19,6 +31,8 @@ class Board:
         self.reset()
 
     def reset(self):
+        self.__board = Matrix(self.__squares, self.__squares)
+
         for color in self.pieces:
             self.pieces[color].clear()
             row = 0 if color == 'white' else self.__squares - 1
@@ -31,7 +45,7 @@ class Board:
             self.pieces[color].append(king)
             self.pieces[color].append(queen)
 
-            # Somente para testes
+            # Reescrever isso depois
             r1 = Rook(color)
             r2 = Rook(color)
             b1 = Bishop(color)
@@ -54,6 +68,8 @@ class Board:
                 piece = Pawn(color)
                 self.__board.set_element(row, column, piece)
                 self.pieces[color].append(piece)
+
+            self.next = 'white'
 
     @property
     def board(self):
@@ -84,6 +100,20 @@ class Board:
                     squares[piece.color].append((i, j))
 
         return squares
+
+    # [color] = Cor do atacado
+    def is_safe(self, square, color) -> bool:
+        opponent = 'white' if color == 'black' else 'black'
+
+        for position in self.occupied_squares[opponent]:
+            if square != position:
+                piece = self.board.matrix[position[0]][position[1]]
+                piece.calculate_actions(position, self)
+
+                if square in piece.takes:
+                    return False
+
+        return True
 
     def __repr__(self):
         string = ''

@@ -1,7 +1,7 @@
 import os
 import pygame
 from enum import Enum
-from pygame.display import update
+from pygame.display import set_palette, update
 from pygame.draw import rect
 
 from pygame.version import PygameVersion
@@ -14,6 +14,8 @@ class Colors(Enum):
     BLUE = (90, 150, 170)
     GREEN = (120, 230, 120)
     DARK_GREEN = (30, 120, 30)
+    RED = (230, 120, 120)
+    DARK_RED = (120, 30, 30)
     BLACK = (30, 30, 30)
 
 
@@ -28,7 +30,6 @@ class BoardSurface(Board):
         self.images = []
 
         self.__selected = None
-        self.__possible_moves = []
 
         # Utilizado quando o jogador tenta colocar a peça em um lugar
         # que a mesma não alcança, nesse caso, ela volta para a casa
@@ -78,15 +79,30 @@ class BoardSurface(Board):
             j = position[0] // self.size
 
             if -1 < i < 8 and -1 < j < 8:
-                if self.board.matrix[i][j] is not None:
+                if self.board.matrix[i][j] is not None and self.next == self.board.matrix[i][j].color:
                     self.__backup = (i, j)
                     self.__selected = self.board.matrix[i][j]
                     self.board.set_element(i, j, None)
-                    self.__possible_moves = self.__selected.possible_moves(
-                        (i, j), self)
+
+                    piece = self.__selected
+                    piece.calculate_actions((i, j), self)
+                    # self.__possible_moves = self.__selected.possible_moves(
+                    # (i, j), self)
+
+                    if type(piece) is Pawn:
+                        for square in piece.takes:
+                            if square in self.occupied_squares[piece.opponent]:
+                                piece.moves.append(square)
+
+                    if type(piece) is King:
+                        for square in piece.moves[::]:
+                            if not self.is_safe(square, piece.color):
+                                piece.moves.remove(square)
 
     def unselect(self, position):
         if self.__selected:
+            piece = self.__selected
+
             i = position[1] // self.size
             j = position[0] // self.size
 
@@ -96,37 +112,40 @@ class BoardSurface(Board):
                 # Estou pensando em alterar a estrutura do código, então
                 # qualquer coisa, lembrar de realizar essa condição em outro lugar
 
-                if (i, j) in self.__possible_moves:
-                    self.board.set_element(i, j, self.__selected)
-                    if type(self.__selected) is Pawn:
-                        self.__selected.first_move = False
+                if (i, j) in piece.moves:
+                    self.board.set_element(i, j, piece)
+                    self.next = piece.opponent
+
+                    if type(piece) is Pawn:
+                        piece.first_move = False
                 else:
                     self.board.set_element(
                         self.__backup[0],
                         self.__backup[1],
-                        self.__selected
+                        piece
                     )
 
                 self.__selected = None
-                self.__possible_moves = []
 
     def draw_moves(self):
         border_width = 1
-        for move in self.__possible_moves:
-            x = self.size * move[1]
-            y = self.size * move[0]
 
-            pygame.draw.rect(
-                self.surface,
-                Colors.DARK_GREEN.value,
-                (x, y, self.size, self.size))
+        if self.__selected:
+            for move in self.__selected.moves:
+                x = self.size * move[1]
+                y = self.size * move[0]
 
-            inner_size = self.size - border_width * 2
+                pygame.draw.rect(
+                    self.surface,
+                    Colors.DARK_GREEN.value,
+                    (x, y, self.size, self.size))
 
-            pygame.draw.rect(
-                self.surface,
-                Colors.GREEN.value,
-                (x + border_width, y + border_width, inner_size, inner_size))
+                inner_size = self.size - border_width * 2
+
+                pygame.draw.rect(
+                    self.surface,
+                    Colors.GREEN.value,
+                    (x + border_width, y + border_width, inner_size, inner_size))
 
     def update(self, event=None):
         self.draw_board()

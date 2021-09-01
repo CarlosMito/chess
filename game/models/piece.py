@@ -7,10 +7,12 @@ class Piece(ABC):
     def __init__(self, color, isAlive=True):
         self.name = ''
         self.color = color
-        self.isAlive = isAlive
+
+        self.moves = []
+        self.takes = []
 
     @abstractmethod
-    def possible_moves(self, position, board):
+    def calculate_actions(self, position, board) -> None:
         pass
 
     @property
@@ -26,27 +28,24 @@ class Pawn(Piece):
         super().__init__(color)
         self.name = 'pawn'
         self.first_move = True
+        self.direction = 1 if self.color == 'white' else -1
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board) -> None:
+        row = position[0] + self.direction
 
-        direction = 1 if self.color == 'white' else -1
+        self.moves = []
+        self.takes = []
 
-        row = position[0] + 1 * direction
+        occupied_squares = board.occupied_squares[self.opponent] + \
+            board.occupied_squares[self.color]
 
-        if (row, position[1] + 1) in board.occupied_squares[self.opponent]:
-            moves.append((row, position[1] + 1))
+        if (row, position[1]) not in occupied_squares:
+            self.moves.append((row, position[1]))
 
-        if (row, position[1] - 1) in board.occupied_squares[self.opponent]:
-            moves.append((row, position[1] - 1))
+            if self.first_move and (row + self.direction, position[1]) not in occupied_squares:
+                self.moves.append((row + self.direction, position[1]))
 
-        if (row, position[1]) not in board.occupied_squares[self.opponent] + board.occupied_squares[self.color]:
-            moves.append((row, position[1]))
-
-            if self.first_move and (row + direction, position[1]) not in board.occupied_squares[self.opponent] + board.occupied_squares[self.color]:
-                moves.append((row + direction, position[1]))
-
-        return moves
+        self.takes = [(row, position[1] + 1), (row, position[1] - 1)]
 
     def __repr__(self) -> str:
         return super().__repr__() + 'P'
@@ -56,18 +55,22 @@ class King(Piece):
     def __init__(self, color):
         super().__init__(color)
         self.name = 'king'
+        self.directions = [(i, j) for i in [1, 0, -1] for j in [1, 0, -1]]
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board) -> None:
+        self.moves = []
+        self.takes = []
 
-        # Verificar condição de cheque ao invés de proibir casas ocupadas
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                square = (position[0] + i, position[1] + j)
-                if (i, j) != (0, 0) and (square[0], square[1]) not in board.occupied_squares:
-                    moves.append((square[0], square[1]))
+        # TODO: Verificar condição de cheque
+        for direction in self.directions:
+            if direction != (0, 0):
+                square = (position[0] + direction[0],
+                          position[1] + direction[1])
 
-        return moves
+                self.takes.append(square)
+
+                if square not in board.occupied_squares[self.color]:
+                    self.moves.append(square)
 
     def __repr__(self) -> str:
         return super().__repr__() + 'K'
@@ -78,15 +81,14 @@ class Queen(Piece):
         super().__init__(color)
         self.name = 'queen'
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board) -> None:
+        self.moves = []
+        self.takes = []
 
         # Debug purposes
-        for i in range(8):
-            for j in range(8):
-                moves.append((i, j))
-
-        return moves
+        # for i in range(8):
+        #     for j in range(8):
+        #         moves.append((i, j))
 
     def __repr__(self) -> str:
         return super().__repr__() + 'Q'
@@ -96,21 +98,23 @@ class Knight(Piece):
     def __init__(self, color):
         super().__init__(color)
         self.name = 'knight'
+        self.directions = [
+            (1, 2), (1, -2), (-1, 2), (-1, -2),
+            (2, 1), (2, -1), (-2, 1), (-2, -1)
+        ]
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board) -> None:
+        self.moves = []
+        self.takes = []
 
-        directions = [(1, 2), (1, -2), (-1, 2), (-1, -2),
-                      (2, 1), (2, -1), (-2, 1), (-2, -1)]
-
-        for direction in directions:
+        for direction in self.directions:
             move = (position[0] + direction[0], position[1] + direction[1])
 
             if -1 < move[0] < 8 and -1 < move[1] < 8:
-                if move not in board.occupied_squares[self.color]:
-                    moves.append(move)
+                self.takes.append(move)
 
-        return moves
+                if move not in board.occupied_squares[self.color]:
+                    self.moves.append(move)
 
     def __repr__(self) -> str:
         return super().__repr__() + 'N'
@@ -121,24 +125,21 @@ class Bishop(Piece):
         super().__init__(color)
         self.name = 'bishop'
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board) -> None:
+        self.moves = []
+        self.takes = []
 
         for direction in [(1, 1), (1, -1), (-1, 1), (-1, -1)]:
-            move = (position[0] + direction[0], position[1] + direction[1])
+            square = (position[0] + direction[0], position[1] + direction[1])
 
-            while -1 < move[0] < 8 and -1 < move[1] < 8:
-                if move in board.occupied_squares[self.color]:
+            while -1 < square[0] < 8 and -1 < square[1] < 8:
+                self.takes.append(square)
+
+                if square in board.occupied_squares[self.color]:
                     break
 
-                moves.append(move)
-
-                if move in board.occupied_squares[self.opponent]:
-                    break
-
-                move = (move[0] + direction[0], move[1] + direction[1])
-
-        return moves
+                self.moves.append(square)
+                square = (square[0] + direction[0], square[1] + direction[1])
 
     def __repr__(self) -> str:
         return super().__repr__() + 'B'
@@ -149,24 +150,21 @@ class Rook(Piece):
         super().__init__(color)
         self.name = 'rook'
 
-    def possible_moves(self, position, board):
-        moves = []
+    def calculate_actions(self, position, board):
+        self.moves = []
+        self.takes = []
 
         for direction in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-            move = (position[0] + direction[0], position[1] + direction[1])
+            square = (position[0] + direction[0], position[1] + direction[1])
 
-            while -1 < move[0] < 8 and -1 < move[1] < 8:
-                if move in board.occupied_squares[self.color]:
+            while -1 < square[0] < 8 and -1 < square[1] < 8:
+                self.takes.append(square)
+
+                if square in board.occupied_squares[self.color]:
                     break
 
-                moves.append(move)
-
-                if move in board.occupied_squares[self.opponent]:
-                    break
-
-                move = (move[0] + direction[0], move[1] + direction[1])
-
-        return moves
+                self.moves.append(square)
+                square = (square[0] + direction[0], square[1] + direction[1])
 
     def __repr__(self) -> str:
         return super().__repr__() + 'R'
