@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod, abstractproperty
 
 
 class Piece(ABC):
-    def __init__(self, color, isAlive=True):
+    def __init__(self, color):
         self.name = ''
         self.color = color
+        self.first_move = True
         self.directions = []
 
-    # @abstractmethod
     def calculate_moves(self, position, board):
         moves = []
 
@@ -38,7 +38,6 @@ class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color)
         self.name = 'pawn'
-        self.first_move = True
         self.direction = 1 if self.color == 'white' else -1
 
     def calculate_moves(self, position, board):
@@ -81,6 +80,18 @@ class King(Piece):
 
                 if -1 < move[0] < 8 and -1 < move[1] < 8:
                     moves.append(move)
+
+        if self.first_move:
+            row = 0 if self.color == 'white' else 7
+            squares = [(row, 0), (row, 7)]
+
+            for square in squares:
+                direction = 2 if square[1] - position[1] > 0 else -2
+                piece = board.board.matrix[square[0]][square[1]]
+
+                if type(piece) is Rook and piece.first_move:
+                    if position in piece.calculate_moves(square, board):
+                        moves.append((row, position[1] + direction))
 
         return moves
 

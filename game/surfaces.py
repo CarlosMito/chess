@@ -120,11 +120,20 @@ class BoardSurface(Board):
                 # qualquer coisa, lembrar de realizar essa condição em outro lugar
 
                 if (i, j) in self.__possible:
+                    if type(piece) is King:
+                        distance = j - self.__backup[1]
+
+                        # Castling
+                        if abs(distance) == 2:
+                            last = 7 if distance > 0 else 0
+                            rook = self.board.matrix[i][last]
+                            self.board.set_element(i, j - distance // 2, rook)
+                            self.board.set_element(i, last, None)
+
                     self.board.set_element(i, j, piece)
                     self.next = piece.opponent
+                    piece.first_move = False
 
-                    if type(piece) is Pawn:
-                        piece.first_move = False
                 else:
                     self.board.set_element(
                         self.__backup[0],
