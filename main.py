@@ -7,9 +7,13 @@ import copy
 
 # Pieces image by User:Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
 
-# TODO: Add Castling
+# TODO: Add Castling [OK]
 # TODO: Add En Passant
 # TODO: Add Pawn Promotion
+# TODO: Add Check Condition
+# TODO: Add Checkmate
+# TODO: Add Play History
+# TODO: Change all rules [castling, en passant] to Board/Piece class
 
 
 class Phone:

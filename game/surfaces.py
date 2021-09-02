@@ -30,6 +30,10 @@ class BoardSurface(Board):
         self.images = []
 
         self.__selected = None
+        self.__passant = {
+            'white': None,
+            'black': None
+        }
 
         # Utilizado quando o jogador tenta colocar a peça em um lugar
         # que a mesma não alcança, nesse caso, ela volta para a casa
@@ -98,7 +102,7 @@ class BoardSurface(Board):
                         possible_takes = piece.calculate_takes((i, j), self)
 
                         for take in possible_takes:
-                            if take in self.occupied_squares[piece.opponent]:
+                            if take in self.occupied_squares[piece.opponent] or take == self.__passant[piece.opponent]:
                                 self.__possible.append(take)
 
                     elif type(piece) is King:
@@ -120,19 +124,32 @@ class BoardSurface(Board):
                 # qualquer coisa, lembrar de realizar essa condição em outro lugar
 
                 if (i, j) in self.__possible:
-                    if type(piece) is King:
+                    self.board.set_element(i, j, piece)
+                    self.next = piece.opponent
+                    piece.first_move = False
+                    self.__passant[piece.color] = None
+
+                    # [Move]: En Passant
+                    if type(piece) is Pawn:
+                        distance = i - self.__backup[0]
+
+                        if abs(distance) == 2:
+                            direction = 1 if piece.color == 'white' else -1
+                            self.__passant[piece.color] = (i - direction, j)
+
+                        elif (i, j) == self.__passant[piece.opponent]:
+                            direction = 1 if piece.opponent == 'white' else -1
+                            self.board.set_element(i + direction, j, None)
+
+                    # [Move]: Castling
+                    elif type(piece) is King:
                         distance = j - self.__backup[1]
 
-                        # Castling
                         if abs(distance) == 2:
                             last = 7 if distance > 0 else 0
                             rook = self.board.matrix[i][last]
                             self.board.set_element(i, j - distance // 2, rook)
                             self.board.set_element(i, last, None)
-
-                    self.board.set_element(i, j, piece)
-                    self.next = piece.opponent
-                    piece.first_move = False
 
                 else:
                     self.board.set_element(
