@@ -80,7 +80,9 @@ class BoardSurface(Board):
             j = position[0] // self.size
 
             if -1 < i < 8 and -1 < j < 8:
-                if self.board.matrix[i][j] is not None and self.next == self.board.matrix[i][j].color:
+                # Adiciona as jogadas por turnos
+                # and self.next == self.board.matrix[i][j].color
+                if self.board.matrix[i][j] is not None:
                     self.__backup = (i, j)
                     self.__selected = self.board.matrix[i][j]
                     self.board.set_element(i, j, None)
