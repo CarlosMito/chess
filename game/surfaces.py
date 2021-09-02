@@ -30,9 +30,20 @@ class BoardSurface(Board):
         self.images = []
 
         self.__selected = None
+
         self.__passant = {
             'white': None,
-            'black': None
+            'black': None,
+        }
+
+        self.__check = {
+            'white': False,
+            'black': False,
+        }
+
+        self.__king = {
+            'white': (0, 3),
+            'black': (7, 3),
         }
 
         # Utilizado quando o jogador tenta colocar a peça em um lugar
@@ -111,6 +122,7 @@ class BoardSurface(Board):
                                 self.__possible.remove(square)
 
     def unselect(self, position):
+        print(self.__check)
         if self.__selected:
             piece = self.__selected
 
@@ -125,6 +137,34 @@ class BoardSurface(Board):
 
                 if (i, j) in self.__possible:
                     self.board.set_element(i, j, piece)
+
+                    # Verify check
+                    for color in ['white', 'black']:
+                        if type(piece) is King:
+                            self.__king[piece.color] = (i, j)
+
+                        is_check_now = not self.is_safe(
+                            self.__king[color], color
+                        )
+
+                        if piece.color == color:
+                            if self.__check[color] and is_check_now:
+                                self.board.set_element(
+                                    self.__backup[0],
+                                    self.__backup[1],
+                                    self.__selected
+                                )
+
+                                self.board.set_element(i, j, None)
+
+                                self.__selected = None
+
+                                # O jogador atual está em cheque, e o movimento
+                                # realizado não retirou o mesmo
+                                return
+
+                        self.__check[color] = is_check_now
+
                     self.next = piece.opponent
                     piece.first_move = False
                     self.__passant[piece.color] = None
@@ -143,6 +183,7 @@ class BoardSurface(Board):
 
                     # [Move]: Castling
                     elif type(piece) is King:
+                        self.__king[piece.color] = (i, j)
                         distance = j - self.__backup[1]
 
                         if abs(distance) == 2:

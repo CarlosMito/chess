@@ -8,7 +8,7 @@ import copy
 # Pieces image by User:Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
 
 # TODO: Add Castling [OK]
-# TODO: Add En Passant
+# TODO: Add En Passant [OK]
 # TODO: Add Pawn Promotion
 # TODO: Add Check Condition
 # TODO: Add Checkmate
