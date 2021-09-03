@@ -9,8 +9,8 @@ import copy
 
 # TODO: Add Castling [OK]
 # TODO: Add En Passant [OK]
-# TODO: Add Pawn Promotion
-# TODO: Add Check Condition
+# TODO: Add Pawn Promotion [OK]
+# TODO: Add Check Condition [OK]
 # TODO: Add Checkmate
 # TODO: Add Play History
 # TODO: Change all rules [castling, en passant] to Board/Piece class

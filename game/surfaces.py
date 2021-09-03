@@ -1,12 +1,12 @@
 import os
+import sys
 import pygame
 from enum import Enum
-from pygame.display import set_palette, update
-from pygame.draw import rect
 
-from pygame.version import PygameVersion
 from game.models.board import Board
 from game.models.piece import *
+
+IGNORE_TURN = True
 
 
 class Colors(Enum):
@@ -96,8 +96,7 @@ class BoardSurface(Board):
 
             if -1 < i < 8 and -1 < j < 8:
                 # Adiciona as jogadas por turnos
-                # and self.next == self.board.matrix[i][j].color
-                if self.board.matrix[i][j] is not None:
+                if self.board.matrix[i][j] is not None and (self.next == self.board.matrix[i][j].color or IGNORE_TURN):
                     self.__backup = (i, j)
                     self.__selected = self.board.matrix[i][j]
                     self.board.set_element(i, j, None)
@@ -122,7 +121,6 @@ class BoardSurface(Board):
                                 self.__possible.remove(square)
 
     def unselect(self, position):
-        print(self.__check)
         if self.__selected:
             piece = self.__selected
 
@@ -136,34 +134,33 @@ class BoardSurface(Board):
                 # qualquer coisa, lembrar de realizar essa condição em outro lugar
 
                 if (i, j) in self.__possible:
+                    backup = self.board.matrix[i][j]
+
                     self.board.set_element(i, j, piece)
 
-                    # Verify check
-                    for color in ['white', 'black']:
-                        if type(piece) is King:
-                            self.__king[piece.color] = (i, j)
+                    if type(piece) is King:
+                        self.__king[piece.color] = (i, j)
 
-                        is_check_now = not self.is_safe(
-                            self.__king[color], color
+                    if not self.is_safe(self.__king[piece.color], piece.color):
+                        self.board.set_element(
+                            self.__backup[0],
+                            self.__backup[1],
+                            self.__selected
                         )
 
-                        if piece.color == color:
-                            if self.__check[color] and is_check_now:
-                                self.board.set_element(
-                                    self.__backup[0],
-                                    self.__backup[1],
-                                    self.__selected
-                                )
+                        self.board.set_element(i, j, backup)
+                        self.__selected = None
 
-                                self.board.set_element(i, j, None)
+                        if type(piece) is King:
+                            self.__king[piece.color] = (
+                                self.__backup[0],
+                                self.__backup[1]
+                            )
 
-                                self.__selected = None
+                        return
 
-                                # O jogador atual está em cheque, e o movimento
-                                # realizado não retirou o mesmo
-                                return
-
-                        self.__check[color] = is_check_now
+                    if self.is_checkmate(piece.opponent):
+                        print('CHECKMATE!')
 
                     self.next = piece.opponent
                     piece.first_move = False
@@ -180,6 +177,16 @@ class BoardSurface(Board):
                         elif (i, j) == self.__passant[piece.opponent]:
                             direction = 1 if piece.opponent == 'white' else -1
                             self.board.set_element(i + direction, j, None)
+
+                        # [Rule]: Pawn Promotion
+                        end = 0 if piece.color == 'black' else 7
+
+                        if i == end:
+                            # Bastar trocar a peça pelo o que irá se transformar
+                            # Terá um problema para ajustar as peças comidas
+                            # pelo oponente e algumas outras coisas
+                            self.board.set_element(i, j, Queen(piece.color))
+                            self.board.matrix[i][j].first_move = False
 
                     # [Move]: Castling
                     elif type(piece) is King:
