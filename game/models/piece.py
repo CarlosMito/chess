@@ -13,25 +13,26 @@ class Piece(ABC):
     def possible_moves(self, others):
         moves = []
 
-        for direction in self.directions:
-            move = (self.square[0] + direction[0],
-                    self.square[1] + direction[1])
+        if self.square:
+            for direction in self.directions:
+                move = (self.square[0] + direction[0],
+                        self.square[1] + direction[1])
 
-            blocked = False
+                blocked = False
 
-            while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
-                moves.append(move)
+                while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
+                    moves.append(move)
 
-                for color in others:
-                    for piece in others[color]:
-                        if move == piece.square:
-                            blocked = True
+                    for color in others:
+                        for piece in others[color]:
+                            if move == piece.square:
+                                blocked = True
+                                break
+
+                        if blocked:
                             break
 
-                    if blocked:
-                        break
-
-                move = (move[0] + direction[0], move[1] + direction[1])
+                    move = (move[0] + direction[0], move[1] + direction[1])
 
         return moves
 
@@ -53,19 +54,22 @@ class Pawn(Piece):
         self.direction = 1 if self.color == 'white' else -1
 
     def possible_moves(self, others):
-        row = self.square[0] + self.direction
-
-        occupied = [piece.square for color in others for piece in others[color]]
-
         moves = []
 
-        if (row, self.square[1]) not in occupied:
-            moves.append((row, self.square[1]))
+        if self.square:
+            row = self.square[0] + self.direction
 
-            move = (row + self.direction, self.square[1])
+            occupied = [
+                piece.square for color in others for piece in others[color]
+            ]
 
-            if self.first_move and move not in occupied:
-                moves.append(move)
+            if (row, self.square[1]) not in occupied:
+                moves.append((row, self.square[1]))
+
+                move = (row + self.direction, self.square[1])
+
+                if self.first_move and move not in occupied:
+                    moves.append(move)
 
         return moves
 
@@ -92,12 +96,13 @@ class Knight(Piece):
     def possible_moves(self, others):
         moves = []
 
-        for direction in self.directions:
-            move = (self.square[0] + direction[0],
-                    self.square[1] + direction[1])
+        if self.square:
+            for direction in self.directions:
+                move = (self.square[0] + direction[0],
+                        self.square[1] + direction[1])
 
-            if -1 < move[0] < 8 and -1 < move[1] < 8:
-                moves.append(move)
+                if -1 < move[0] < 8 and -1 < move[1] < 8:
+                    moves.append(move)
 
         return moves
 

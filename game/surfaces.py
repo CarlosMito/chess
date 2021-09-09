@@ -133,7 +133,7 @@ class BoardSurface:
                 if (i, j) in self.__possible:
                     self.__passant[piece.color] = None
 
-                    direction = 0
+                    passing = 0
                     taken = None
 
                     # [Move]: En Passant
@@ -143,7 +143,10 @@ class BoardSurface:
                         if abs(self.__backup[0] - i) == 2:
                             self.__passant[piece.color] = (i - direction, j)
 
-                    taken = self.board.get_piece((i - direction, j))
+                        elif j != self.__backup[1] and (i, j) == self.__passant[piece.opponent]:
+                            passing = direction
+
+                    taken = self.board.get_piece((i - passing, j))
 
                     if taken is not None:
                         taken.square = None

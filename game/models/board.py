@@ -92,7 +92,7 @@ class Board:
         opponent = 'white' if color == 'black' else 'black'
 
         for piece in self.pieces[opponent]:
-            if piece.square and square in piece.possible_takes(self.pieces):
+            if square in piece.possible_takes(self.pieces):
                 return False
 
         return True
