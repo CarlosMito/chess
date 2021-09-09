@@ -11,7 +11,7 @@ import copy
 # TODO: Add En Passant [OK]
 # TODO: Add Pawn Promotion [OK]
 # TODO: Add Check Condition [OK]
-# TODO: Add Checkmate
+# TODO: Add Checkmate [OK]
 # TODO: Add Play History
 # TODO: Change all rules [castling, en passant] to Board/Piece class
 
@@ -29,8 +29,12 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((800, 500))
 
     running = True
-    board = BoardSurface(screen)
+
+    board = Board()
     # print(board)
+    # print(board.get_squares())
+
+    surface = BoardSurface(screen, board)
 
     while running:
         for event in pygame.event.get():
@@ -41,18 +45,19 @@ if __name__ == '__main__':
                 running = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                board.select(event.pos)
+                surface.select(event.pos)
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                board.unselect(event.pos)
-                board.update()
+                surface.unselect(event.pos)
+                surface.update()
+                pass
 
             elif event.type == pygame.MOUSEMOTION:
-                board.update(event)
+                surface.update(event)
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    board.reset()
-                    board.update()
+                    surface.board.reset()
+                    surface.update()
 
         pygame.display.flip()

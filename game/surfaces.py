@@ -19,16 +19,18 @@ class Colors(Enum):
     BLACK = (30, 30, 30)
 
 
-class BoardSurface(Board):
-    def __init__(self, parent, squares=8, size=45):
-        super().__init__(squares=squares)
-
-        self.counter = 0
-
+class BoardSurface:
+    def __init__(self, parent, board, size=45):
         self.parent = parent
+        self.board = board
         self.size = size
-        self.images = []
 
+        self.__images = {
+            'white': {},
+            'black': {}
+        }
+
+        self.__counter = 0
         self.__selected = None
 
         self.__passant = {
@@ -41,45 +43,47 @@ class BoardSurface(Board):
             'black': False,
         }
 
-        self.__king = {
-            'white': (0, 3),
-            'black': (7, 3),
-        }
-
-        # Utilizado quando o jogador tenta colocar a peça em um lugar
-        # que a mesma não alcança, nesse caso, ela volta para a casa
-        # onde ela estava.
+        # Utilizado quando o jogador tenta colocar uma peça em um lugar
+        # que a mesma não alcança, ou quando sua movimentação causa cheque.
+        # Nesses casos, a peça volta para a casa onde ela estava.
         self.__backup = (0, 0)
         self.__possible = []
 
-        self.surface = pygame.Surface((squares * size, squares * size))
+        self.surface = pygame.Surface((board.size * size, board.size * size))
 
+        self.load_images()
         self.update()
 
+    def load_images(self):
+        for color in self.__images:
+            for name in ['pawn', 'rook', 'knight', 'bishop', 'king', 'queen']:
+                path = os.path.join('assets', 'images',
+                                    'pieces', color, name + '.svg')
+
+                self.__images[color][name] = pygame.image.load(path)
+
     def draw_board(self):
-        for i in range(self.board.rows):
-            for j in range(self.board.columns):
+        for i in range(self.board.size):
+            for j in range(self.board.size):
                 pygame.draw.rect(
                     self.surface,
                     Colors.BLUE.value if (i + j) % 2 else Colors.WHITE.value,
                     (self.size * i, self.size * j, self.size, self.size))
 
     def draw_pieces(self):
-        for i, row in enumerate(self.board.matrix):
-            for j, piece in enumerate(row):
-                if piece is not None:
-                    image = pygame.image.load(os.path.join(
-                        'assets', 'images', 'pieces', piece.color, piece.name + '.svg'))
-
-                    self.images.append(image)
-
+        for color in self.board.pieces:
+            for piece in self.board.pieces[color]:
+                if piece.square is not None:
                     # O número da linha define a coordenada y da imagem
-                    self.surface.blit(image, (j * self.size, i * self.size))
+                    position = (piece.square[1] * self.size,
+                                piece.square[0] * self.size)
+
+                    self.surface.blit(
+                        self.__images[color][piece.name], position)
 
     def draw_selected(self, position):
         if self.__selected:
-            image = pygame.image.load(os.path.join(
-                'assets', 'images', 'pieces', self.__selected.color, self.__selected.name + '.svg'))
+            image = self.__images[self.__selected.color][self.__selected.name]
 
             size = image.get_size()
             rectangle = image.get_rect()
@@ -90,126 +94,100 @@ class BoardSurface(Board):
             self.surface.blit(image, rectangle)
 
     def select(self, position):
-        if not self.__selected:
+        if self.board.running and not self.__selected:
             i = position[1] // self.size
             j = position[0] // self.size
 
-            if -1 < i < 8 and -1 < j < 8:
-                # Adiciona as jogadas por turnos
-                if self.board.matrix[i][j] is not None and (self.next == self.board.matrix[i][j].color or IGNORE_TURN):
-                    self.__backup = (i, j)
-                    self.__selected = self.board.matrix[i][j]
-                    self.board.set_element(i, j, None)
+            if -1 < i < self.board.size and -1 < j < self.board.size:
+                piece = self.board.get_piece((i, j))
 
-                    piece = self.__selected
-                    self.__possible = piece.calculate_moves((i, j), self)
+                # Adiciona as jogadas por turnos
+                if piece is not None and (self.board.next == piece.color or IGNORE_TURN):
+                    self.__backup = (i, j)
+                    self.__selected = piece
+                    self.__possible = piece.possible_moves(self.board.pieces)
+
+                    occupied = {
+                        'ally': self.board.get_occupied(piece.color),
+                        'enemy': self.board.get_occupied(piece.opponent)
+                    }
 
                     for move in self.__possible[::]:
-                        if move in self.occupied_squares[piece.color]:
+                        if move in occupied['ally']:
                             self.__possible.remove(move)
 
                     if type(piece) is Pawn:
-                        possible_takes = piece.calculate_takes((i, j), self)
+                        self.__possible += [x for x in piece.possible_takes(self.board.pieces)
+                                            if x in occupied['enemy'] or x == self.__passant[piece.opponent]]
 
-                        for take in possible_takes:
-                            if take in self.occupied_squares[piece.opponent] or take == self.__passant[piece.opponent]:
-                                self.__possible.append(take)
-
-                    elif type(piece) is King:
-                        for square in self.__possible[::]:
-                            if not self.is_safe(square, piece.color):
-                                self.__possible.remove(square)
+                    piece.square = None
 
     def unselect(self, position):
         if self.__selected:
-            piece = self.__selected
-
             i = position[1] // self.size
             j = position[0] // self.size
 
-            if -1 < i < 8 and -1 < j < 8:
-                # [possible_moves] inclui casas fora do tabuleiro.
-                # A condição acima faz o tratamento desse problema
-                # Estou pensando em alterar a estrutura do código, então
-                # qualquer coisa, lembrar de realizar essa condição em outro lugar
+            if -1 < i < self.board.size and -1 < j < self.board.size:
+                piece = self.__selected
 
                 if (i, j) in self.__possible:
-                    backup = self.board.matrix[i][j]
-
-                    self.board.set_element(i, j, piece)
-
-                    if type(piece) is King:
-                        self.__king[piece.color] = (i, j)
-
-                    if not self.is_safe(self.__king[piece.color], piece.color):
-                        self.board.set_element(
-                            self.__backup[0],
-                            self.__backup[1],
-                            self.__selected
-                        )
-
-                        self.board.set_element(i, j, backup)
-                        self.__selected = None
-
-                        if type(piece) is King:
-                            self.__king[piece.color] = (
-                                self.__backup[0],
-                                self.__backup[1]
-                            )
-
-                        return
-
-                    if self.is_checkmate(piece.opponent):
-                        print('CHECKMATE!')
-
-                    self.next = piece.opponent
-                    piece.first_move = False
                     self.__passant[piece.color] = None
+
+                    direction = 0
+                    taken = None
 
                     # [Move]: En Passant
                     if type(piece) is Pawn:
-                        distance = i - self.__backup[0]
+                        direction = 1 if piece.color == 'white' else -1
 
-                        if abs(distance) == 2:
-                            direction = 1 if piece.color == 'white' else -1
+                        if abs(self.__backup[0] - i) == 2:
                             self.__passant[piece.color] = (i - direction, j)
 
-                        elif (i, j) == self.__passant[piece.opponent]:
-                            direction = 1 if piece.opponent == 'white' else -1
-                            self.board.set_element(i + direction, j, None)
+                    taken = self.board.get_piece((i - direction, j))
 
-                        # [Rule]: Pawn Promotion
-                        end = 0 if piece.color == 'black' else 7
+                    if taken is not None:
+                        taken.square = None
 
-                        if i == end:
-                            # Bastar trocar a peça pelo o que irá se transformar
-                            # Terá um problema para ajustar as peças comidas
-                            # pelo oponente e algumas outras coisas
-                            self.board.set_element(i, j, Queen(piece.color))
-                            self.board.matrix[i][j].first_move = False
+                    piece.square = (i, j)
+
+                    # Verifica se a movimentação causou cheque
+                    if not self.board.is_safe(self.board.kings[piece.color].square, piece.color):
+                        piece.square = self.__backup
+                        self.__selected = None
+
+                        if taken is not None:
+                            taken.square = (i, j)
+
+                        return
 
                     # [Move]: Castling
-                    elif type(piece) is King:
-                        self.__king[piece.color] = (i, j)
+                    if type(piece) is King:
                         distance = j - self.__backup[1]
 
                         if abs(distance) == 2:
                             last = 7 if distance > 0 else 0
-                            rook = self.board.matrix[i][last]
-                            self.board.set_element(i, j - distance // 2, rook)
-                            self.board.set_element(i, last, None)
+                            rook = self.board.get_piece((i, last))
+                            rook.square = (i, j - distance // 2)
+
+                    # [Rule]: Pawn Promotion
+                    if type(piece) is Pawn:
+                        pass
+
+                    # [Rule]: Checkmate
+                    if self.board.is_checkmate(piece.opponent):
+                        print('CHECKMATE')
+                        self.running = False
+
+                    piece.first_move = False
+                    self.next = piece.opponent
 
                 else:
-                    self.board.set_element(
-                        self.__backup[0],
-                        self.__backup[1],
-                        piece
-                    )
+                    self.__selected.square = self.__backup
 
                 self.__selected = None
 
     def draw_moves(self):
-        border_width = 1
+        border_width = 2
 
         if self.__selected:
             for move in self.__possible:

@@ -12,8 +12,8 @@ class Matrix:
         self.__matrix = [[default for _ in range(columns)]
                          for _ in range(rows)]
 
-    def set_element(self, i, j, element):
-        self.__matrix[i][j] = element
+    def set_element(self, position, element):
+        self.__matrix[position[0]][position[1]] = element
 
     @property
     def rows(self):
