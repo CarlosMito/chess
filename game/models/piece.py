@@ -149,6 +149,9 @@ class King(Piece):
                            for j in [1, 0, -1] if i != 0 or j != 0]
 
     def possible_moves(self, others):
+        # TODO: Refatorar a parte de remoção dos movimentos inválidos
+        # Está com muito for desnecessário
+
         moves = []
 
         # Remove o Tei para verificar possíveis ameaças
@@ -168,8 +171,16 @@ class King(Piece):
 
         self.square = backup
 
+        in_check = False
+
+        for enemy in others[self.opponent]:
+            if enemy.square is not None and self.square in enemy.possible_takes(others):
+                in_check = True
+                break
+
         # [Move]: Castling
-        if self.first_move:
+        # O Rei não pode estar em cheque no castling
+        if self.first_move and not in_check:
             for ally in others[self.color]:
                 if type(ally) is Rook:
                     if ally.first_move and ally.square:
@@ -179,7 +190,13 @@ class King(Piece):
                         if self.square in ally.possible_moves(others):
                             move = (self.square[0],
                                     self.square[1] + 2 * direction)
-                            moves.append(move)
+
+                            # Remove o movimento caso o Rei fique em cheque
+                            for enemy in others[self.opponent]:
+                                if enemy.square is not None and move in enemy.possible_takes(others):
+                                    break
+                            else:
+                                moves.append(move)
 
         return moves
 
