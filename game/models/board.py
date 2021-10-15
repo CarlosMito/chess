@@ -28,11 +28,23 @@ class Board:
             'white': None
         }
 
+        self.passant = {
+            'white': None,
+            'black': None,
+        }
+
+        self.history = []
+
         self.reset()
 
     def reset(self):
         self.next = 'white'
         self.running = True
+
+        self.passant['white'] = None
+        self.passant['black'] = None
+
+        self.history.clear()
 
         for color in self.pieces:
             self.pieces[color].clear()
@@ -57,6 +69,117 @@ class Board:
 
             for column in range(self.size):
                 self.pieces[color].append(Pawn(color, (row, column)))
+
+    def to_file(self, index):
+        files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        return files[-(index + 1)]
+
+    def to_rank(self, index):
+        return str(index + 1)
+
+    def save_move(self, piece, square, additional):
+        if additional['castling']:
+            move = 'O-O-O' if square[1] > 3 else 'O-O'
+            self.history.append(move)
+            print(move)
+            return
+
+        move = ''
+
+        # Adicionar desambiguação aqui
+
+        if type(piece) is not Pawn:
+            move += str(piece)[1]
+
+        move += additional['taken']
+        move += self.to_file(square[1]) + self.to_rank(square[0])
+        move += additional['passant']
+        move += additional['promotion']
+
+        self.history.append(move)
+        print(move)
+
+    def move(self, piece, square):
+        additional = {
+            x: '' for x in ['castling', 'taken', 'passant', 'promotion']
+        }
+
+        backup = piece.square
+        self.passant[piece.color] = None
+
+        passing = 0
+        taken = None
+
+        # [Move]: En Passant
+        if type(piece) is Pawn:
+            direction = 1 if piece.color == 'white' else -1
+
+            if abs(backup[0] - square[0]) == 2:
+                self.passant[piece.color] = (square[0] - direction, square[1])
+
+            # square[1] != backup[1]
+            elif square == self.passant[piece.opponent]:
+                passing = direction
+                additional['passant'] = 'e.p.'
+
+        taken = self.get_piece((square[0] - passing, square[1]))
+
+        if taken is not None:
+            taken.square = None
+            additional['taken'] = 'x'
+
+        piece.square = square
+
+        # Verifica se a movimentação causou cheque
+        if not self.is_safe(self.kings[piece.color].square, piece.color):
+            piece.square = backup
+
+            if taken is not None:
+                taken.square = square
+
+            return
+
+        # [Move]: Castling
+        if type(piece) is King:
+            distance = square[1] - backup[1]
+
+            if abs(distance) == 2:
+                last = 7 if distance > 0 else 0
+                rook = self.get_piece((square[0], last))
+                rook.square = (square[0], square[1] - distance // 2)
+                additional['castling'] = True
+
+        # [Rule]: Pawn Promotion
+        if type(piece) is Pawn:
+            promotion_row = 0 if piece.color == 'black' else 7
+
+            if square[0] == promotion_row:
+                promotion = input('Choose a type [Q, B, N, R]: ')
+
+                self.pieces[piece.color].remove(piece)
+
+                chessmen = {
+                    'Q': Queen,
+                    'B': Bishop,
+                    'N': Knight,
+                    'R': Rook
+                }
+
+                promoted = chessmen[promotion](piece.color, piece.square)
+                promoted.first_move = False
+
+                self.pieces[piece.color].append(promoted)
+                additional['promotion'] = '=' + str(promoted)[1]
+
+        self.save_move(piece, square, additional)
+
+        # [Rule]: Checkmate
+        if self.is_checkmate(piece.opponent):
+            print('CHECKMATE')
+            self.running = False
+
+        piece.first_move = False
+        self.next = piece.opponent
 
     # [color] Cor das peças ocupantes
     def get_occupied(self, color=None):
@@ -87,7 +210,7 @@ class Board:
 
         return attackers
 
-    # [color] = Cor do atacado
+    # [color] = Cor da peça em ameaça
     def is_safe(self, square, color) -> bool:
         opponent = 'white' if color == 'black' else 'black'
 
@@ -98,7 +221,6 @@ class Board:
         return True
 
     # [color] Cor de quem está tomando cheque mate
-    # [square] Casa do Rei para o cheque-mate
     def is_checkmate(self, color) -> bool:
         king = self.kings[color]
 
@@ -112,7 +234,7 @@ class Board:
         moves = king.possible_moves(self.pieces)
 
         for move in moves[::]:
-            if move in occupied:
+            if move in occupied or not self.is_safe(move, color):
                 moves.remove(move)
 
         if len(moves) > 0:
@@ -157,7 +279,7 @@ class Board:
             block_square = (attackers[0].square[0] + direction[0],
                             attackers[0].square[1] + direction[1])
 
-            while -1 < block_square[0] < 7 and 1 < block_square[1] < 7 and block_square != king.square:
+            while -1 < block_square[0] < 7 and -1 < block_square[1] < 7 and block_square != king.square:
                 blockers = self.get_blockers(block_square, king.color)
 
                 for blocker in blockers:

@@ -6,7 +6,8 @@ from enum import Enum
 from game.models.board import Board
 from game.models.piece import *
 
-IGNORE_TURN = True
+# Ferramenta para debug
+IGNORE_TURN = False
 
 
 class Colors(Enum):
@@ -25,29 +26,12 @@ class BoardSurface:
         self.board = board
         self.size = size
 
+        self.__selected = None
+        self.__possible = []
         self.__images = {
             'white': {},
             'black': {}
         }
-
-        self.__counter = 0
-        self.__selected = None
-
-        self.__passant = {
-            'white': None,
-            'black': None,
-        }
-
-        self.__check = {
-            'white': False,
-            'black': False,
-        }
-
-        # Utilizado quando o jogador tenta colocar uma peça em um lugar
-        # que a mesma não alcança, ou quando sua movimentação causa cheque.
-        # Nesses casos, a peça volta para a casa onde ela estava.
-        self.__backup = (0, 0)
-        self.__possible = []
 
         self.surface = pygame.Surface((board.size * size, board.size * size))
 
@@ -73,7 +57,7 @@ class BoardSurface:
     def draw_pieces(self):
         for color in self.board.pieces:
             for piece in self.board.pieces[color]:
-                if piece.square is not None:
+                if piece.square is not None and piece != self.__selected:
                     # O número da linha define a coordenada y da imagem
                     position = (piece.square[1] * self.size,
                                 piece.square[0] * self.size)
@@ -103,7 +87,6 @@ class BoardSurface:
 
                 # Adiciona as jogadas por turnos
                 if piece is not None and (self.board.next == piece.color or IGNORE_TURN):
-                    self.__backup = (i, j)
                     self.__selected = piece
                     self.__possible = piece.possible_moves(self.board.pieces)
 
@@ -112,15 +95,16 @@ class BoardSurface:
                         'enemy': self.board.get_occupied(piece.opponent)
                     }
 
+                    # Remove os movimentos que capturam peças aliadas
                     for move in self.__possible[::]:
                         if move in occupied['ally']:
                             self.__possible.remove(move)
 
+                    # Adiciona os movimentos de captura do peão
                     if type(piece) is Pawn:
-                        self.__possible += [x for x in piece.possible_takes(self.board.pieces)
-                                            if x in occupied['enemy'] or x == self.__passant[piece.opponent]]
-
-                    piece.square = None
+                        for square in piece.possible_takes(self.board.pieces):
+                            if square in occupied['enemy'] or square == self.board.passant[piece.opponent]:
+                                self.__possible.append(square)
 
     def unselect(self, position):
         if self.__selected:
@@ -128,66 +112,10 @@ class BoardSurface:
             j = position[0] // self.size
 
             if -1 < i < self.board.size and -1 < j < self.board.size:
-                piece = self.__selected
-
                 if (i, j) in self.__possible:
-                    self.__passant[piece.color] = None
+                    self.board.move(self.__selected, (i, j))
 
-                    passing = 0
-                    taken = None
-
-                    # [Move]: En Passant
-                    if type(piece) is Pawn:
-                        direction = 1 if piece.color == 'white' else -1
-
-                        if abs(self.__backup[0] - i) == 2:
-                            self.__passant[piece.color] = (i - direction, j)
-
-                        elif j != self.__backup[1] and (i, j) == self.__passant[piece.opponent]:
-                            passing = direction
-
-                    taken = self.board.get_piece((i - passing, j))
-
-                    if taken is not None:
-                        taken.square = None
-
-                    piece.square = (i, j)
-
-                    # Verifica se a movimentação causou cheque
-                    if not self.board.is_safe(self.board.kings[piece.color].square, piece.color):
-                        piece.square = self.__backup
-                        self.__selected = None
-
-                        if taken is not None:
-                            taken.square = (i, j)
-
-                        return
-
-                    # [Move]: Castling
-                    if type(piece) is King:
-                        distance = j - self.__backup[1]
-
-                        if abs(distance) == 2:
-                            last = 7 if distance > 0 else 0
-                            rook = self.board.get_piece((i, last))
-                            rook.square = (i, j - distance // 2)
-
-                    # [Rule]: Pawn Promotion
-                    if type(piece) is Pawn:
-                        pass
-
-                    # [Rule]: Checkmate
-                    if self.board.is_checkmate(piece.opponent):
-                        print('CHECKMATE')
-                        self.running = False
-
-                    piece.first_move = False
-                    self.next = piece.opponent
-
-                else:
-                    self.__selected.square = self.__backup
-
-                self.__selected = None
+            self.__selected = None
 
     def draw_moves(self):
         border_width = 2

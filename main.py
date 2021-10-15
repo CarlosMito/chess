@@ -12,8 +12,9 @@ import copy
 # TODO: Add Pawn Promotion [OK]
 # TODO: Add Check Condition [OK]
 # TODO: Add Checkmate [OK]
+# TODO: Add Stalemate
 # TODO: Add Play History
-# TODO: Change all rules [castling, en passant] to Board/Piece class
+# TODO: Change all rules [castling, en passant] to Board/Piece class [OK]
 
 
 class Phone:

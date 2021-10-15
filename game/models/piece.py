@@ -151,9 +151,13 @@ class King(Piece):
     def possible_moves(self, others):
         moves = []
 
+        # Remove o Tei para verificar possíveis ameaças
+        backup = self.square
+        self.square = None
+
         for direction in self.directions:
-            move = (self.square[0] + direction[0],
-                    self.square[1] + direction[1])
+            move = (backup[0] + direction[0],
+                    backup[1] + direction[1])
 
             if -1 < move[0] < 8 and -1 < move[1] < 8:
                 for enemy in others[self.opponent]:
@@ -161,6 +165,8 @@ class King(Piece):
                         break
                 else:
                     moves.append(move)
+
+        self.square = backup
 
         # [Move]: Castling
         if self.first_move:
