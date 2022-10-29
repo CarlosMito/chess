@@ -128,11 +128,11 @@ class Board:
             taken.square = None
             additional['taken'] = 'x'
 
-        piece.square = square
+        piece.position = square
 
         # Verifica se a movimentação causou cheque
         if not self.is_safe(self.kings[piece.color].square, piece.color):
-            piece.square = backup
+            piece.position = backup
 
             if taken is not None:
                 taken.square = square
@@ -165,7 +165,7 @@ class Board:
                     'R': Rook
                 }
 
-                promoted = chessmen[promotion](piece.color, piece.square)
+                promoted = chessmen[promotion](piece.color, piece.position)
                 promoted.first_move = False
 
                 self.pieces[piece.color].append(promoted)

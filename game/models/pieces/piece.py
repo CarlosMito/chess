@@ -1,22 +1,27 @@
 from enum import Enum
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
+
+
+class Color(Enum):
+    WHITE = 1
+    BLACK = -1
 
 
 class Piece(ABC):
-    def __init__(self, color, square=None):
+    def __init__(self, color, position=None):
         self.name = ''
         self.color = color
-        self.square = square
+        self.position = position
         self.first_move = True
         self.directions = []
 
     def possible_moves(self, others):
         moves = []
 
-        if self.square:
+        if self.position:
             for direction in self.directions:
-                move = (self.square[0] + direction[0],
-                        self.square[1] + direction[1])
+                move = (self.position[0] + direction[0],
+                        self.position[1] + direction[1])
 
                 blocked = False
 
@@ -56,17 +61,17 @@ class Pawn(Piece):
     def possible_moves(self, others):
         moves = []
 
-        if self.square:
-            row = self.square[0] + self.direction
+        if self.position:
+            row = self.position[0] + self.direction
 
             occupied = [
                 piece.square for color in others for piece in others[color]
             ]
 
-            if (row, self.square[1]) not in occupied:
-                moves.append((row, self.square[1]))
+            if (row, self.position[1]) not in occupied:
+                moves.append((row, self.position[1]))
 
-                move = (row + self.direction, self.square[1])
+                move = (row + self.direction, self.position[1])
 
                 if self.first_move and move not in occupied:
                     moves.append(move)
@@ -74,9 +79,9 @@ class Pawn(Piece):
         return moves
 
     def possible_takes(self, others):
-        if self.square:
-            row = self.square[0] + self.direction
-            return [(row, self.square[1] + 1), (row, self.square[1] - 1)]
+        if self.position:
+            row = self.position[0] + self.direction
+            return [(row, self.position[1] + 1), (row, self.position[1] - 1)]
         else:
             return []
 
@@ -96,10 +101,10 @@ class Knight(Piece):
     def possible_moves(self, others):
         moves = []
 
-        if self.square:
+        if self.position:
             for direction in self.directions:
-                move = (self.square[0] + direction[0],
-                        self.square[1] + direction[1])
+                move = (self.position[0] + direction[0],
+                        self.position[1] + direction[1])
 
                 if -1 < move[0] < 8 and -1 < move[1] < 8:
                     moves.append(move)
@@ -183,8 +188,8 @@ class King(Piece):
         if self.first_move and not in_check:
             for ally in others[self.color]:
                 if type(ally) is Rook:
-                    if ally.first_move and ally.square:
-                        direction = 1 if ally.square[1] - \
+                    if ally.first_move and ally.position:
+                        direction = 1 if ally.position[1] - \
                             self.square[1] > 0 else -1
 
                         if self.square in ally.possible_moves(others):
