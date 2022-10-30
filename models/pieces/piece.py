@@ -6,10 +6,12 @@ class Color(Enum):
     WHITE = 1
     BLACK = -1
 
+    def __str__(self):
+        return str(self.name)
+
 
 class Piece(ABC):
-    def __init__(self, color, position=None):
-        self.name = ''
+    def __init__(self, color: Color, position=None):
         self.color = color
         self.position = position
         self.first_move = True
@@ -18,26 +20,25 @@ class Piece(ABC):
     def possible_moves(self, others):
         moves = []
 
-        if self.position:
-            for direction in self.directions:
-                move = (self.position[0] + direction[0],
-                        self.position[1] + direction[1])
+        for direction in self.directions:
+            move = (self.position[0] + direction[0],
+                    self.position[1] + direction[1])
 
-                blocked = False
+            blocked = False
 
-                while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
-                    moves.append(move)
+            while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
+                moves.append(move)
 
-                    for color in others:
-                        for piece in others[color]:
-                            if move == piece.square:
-                                blocked = True
-                                break
-
-                        if blocked:
+                for color in others:
+                    for piece in others[color]:
+                        if move == piece.square:
+                            blocked = True
                             break
 
-                    move = (move[0] + direction[0], move[1] + direction[1])
+                    if blocked:
+                        break
+
+                move = (move[0] + direction[0], move[1] + direction[1])
 
         return moves
 
@@ -48,102 +49,17 @@ class Piece(ABC):
     def opponent(self):
         return 'white' if self.color == 'black' else 'black'
 
-    def __repr__(self) -> str:
-        return self.color[0].upper()
-
-
-class Pawn(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'pawn'
-        self.direction = 1 if self.color == 'white' else -1
-
-    def possible_moves(self, others):
-        moves = []
-
-        if self.position:
-            row = self.position[0] + self.direction
-
-            occupied = [
-                piece.square for color in others for piece in others[color]
-            ]
-
-            if (row, self.position[1]) not in occupied:
-                moves.append((row, self.position[1]))
-
-                move = (row + self.direction, self.position[1])
-
-                if self.first_move and move not in occupied:
-                    moves.append(move)
-
-        return moves
-
-    def possible_takes(self, others):
-        if self.position:
-            row = self.position[0] + self.direction
-            return [(row, self.position[1] + 1), (row, self.position[1] - 1)]
-        else:
-            return []
-
-    def __repr__(self) -> str:
-        return super().__repr__() + 'P'
-
-
-class Knight(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'knight'
-        self.directions = [
-            (1, 2), (1, -2), (-1, 2), (-1, -2),
-            (2, 1), (2, -1), (-2, 1), (-2, -1)
-        ]
-
-    def possible_moves(self, others):
-        moves = []
-
-        if self.position:
-            for direction in self.directions:
-                move = (self.position[0] + direction[0],
-                        self.position[1] + direction[1])
-
-                if -1 < move[0] < 8 and -1 < move[1] < 8:
-                    moves.append(move)
-
-        return moves
-
-    def __repr__(self) -> str:
-        return super().__repr__() + 'N'
+    def __str__(self) -> str:
+        piecename = self.__class__.__name__
+        position = self.position or "OUT"
+        return f"[{str(self.color)} {piecename.upper()} : {position}]"
 
 
 class Queen(Piece):
     def __init__(self, color, square=None):
         super().__init__(color, square)
-        self.name = 'queen'
         self.directions = [(i, j) for i in [1, 0, -1]
                            for j in [1, 0, -1] if i != 0 or j != 0]
-
-    def __repr__(self) -> str:
-        return super().__repr__() + 'Q'
-
-
-class Bishop(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'bishop'
-        self.directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
-
-    def __repr__(self) -> str:
-        return super().__repr__() + 'B'
-
-
-class Rook(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'rook'
-        self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-
-    def __repr__(self) -> str:
-        return super().__repr__() + 'R'
 
 
 class King(Piece):

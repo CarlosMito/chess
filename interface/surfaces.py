@@ -4,7 +4,7 @@ import pygame
 from enum import Enum
 
 from game.models.board import Board
-from game.models.piece import *
+from game.models.pieces.piece import *
 
 # Ferramenta para debug
 IGNORE_TURN = False

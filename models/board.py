@@ -1,6 +1,6 @@
 from utils.matrix import Matrix
 from utils.exceptions import *
-from game.models.piece import *
+from game.models.pieces.piece import *
 
 
 '''

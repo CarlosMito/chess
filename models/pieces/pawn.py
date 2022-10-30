@@ -1,31 +1,30 @@
-from models.pieces.piece import Piece
+from .piece import Piece
 
 
 class Pawn(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'pawn'
-        self.direction = 1 if self.color == 'white' else -1
+    def __init__(self, color, position=None):
+        super().__init__(color, position)
+        self.direction = self.color.value
 
-    def possible_moves(self, others):
-        moves = []
+    # def possible_moves(self, others):
+    #     moves = []
 
-        if self.position:
-            row = self.position[0] + self.direction
+    #     if self.position:
+    #         row = self.position[0] + self.direction
 
-            occupied = [
-                piece.square for color in others for piece in others[color]
-            ]
+    #         occupied = [
+    #             piece.square for color in others for piece in others[color]
+    #         ]
 
-            if (row, self.position[1]) not in occupied:
-                moves.append((row, self.position[1]))
+    #         if (row, self.position[1]) not in occupied:
+    #             moves.append((row, self.position[1]))
 
-                move = (row + self.direction, self.position[1])
+    #             move = (row + self.direction, self.position[1])
 
-                if self.first_move and move not in occupied:
-                    moves.append(move)
+    #             if self.first_move and move not in occupied:
+    #                 moves.append(move)
 
-        return moves
+    #     return moves
 
     def possible_takes(self, others):
         if self.position:
@@ -34,5 +33,6 @@ class Pawn(Piece):
         else:
             return []
 
-    def __repr__(self) -> str:
-        return super().__repr__() + 'P'
+    # def __str__(self) -> str:
+    #     piece = self.__class__.__name__
+    #     return f"[{super().__str__()} {piece.upper()} - {1}]"

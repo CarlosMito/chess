@@ -1,1 +1,1 @@
-from pawn import Pawn
+from .pawn import Pawn
