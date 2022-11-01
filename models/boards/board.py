@@ -7,14 +7,6 @@ from abc import ABC, abstractmethod
 # from game.models.pieces.piece import *
 
 
-'''
-Adicionar um enum player.black = -1 e player.white = 1
-Adicionar extensão do enum para string
-Verificar se é possível definir uma enum a partir de seu value, exemplo
--1 * -1 = 1 e definir um enum 1 que seria player.white
-'''
-
-
 class Board(ABC):
 
     @abstractmethod
@@ -26,6 +18,10 @@ class Board(ABC):
     def reset(self):
         pass
 
+    @abstractmethod
+    def clear(self):
+        pass
+
     @property
     def board(self) -> List[List[Piece | None]]:
         board = [[None for _ in range(self.size)] for _ in range(self.size)]
@@ -34,7 +30,8 @@ class Board(ABC):
             if position := piece.position:
                 board[position[0]][position[1]] = piece
 
-        return board
+        # I think there's no problem reversing this
+        return board[::-1]
 
     def __str__(self):
 

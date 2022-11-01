@@ -1,7 +1,6 @@
+from typing import Tuple
 from enum import Enum
 from abc import ABC, abstractmethod
-from utils.position import Position
-from typing import Tuple
 
 
 class Color(Enum):
@@ -64,83 +63,83 @@ class Piece(ABC):
         return f"[{str(self.color)} {piecename.upper()} : {position}]"
 
 
-class Queen(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.directions = [(i, j) for i in [1, 0, -1]
-                           for j in [1, 0, -1] if i != 0 or j != 0]
+# class Queen(Piece):
+#     def __init__(self, color, square=None):
+#         super().__init__(color, square)
+#         self.directions = [(i, j) for i in [1, 0, -1]
+#                            for j in [1, 0, -1] if i != 0 or j != 0]
 
 
-class King(Piece):
-    def __init__(self, color, square=None):
-        super().__init__(color, square)
-        self.name = 'king'
-        self.directions = [(i, j) for i in [1, 0, -1]
-                           for j in [1, 0, -1] if i != 0 or j != 0]
+# class King(Piece):
+#     def __init__(self, color, square=None):
+#         super().__init__(color, square)
+#         self.name = 'king'
+#         self.directions = [(i, j) for i in [1, 0, -1]
+#                            for j in [1, 0, -1] if i != 0 or j != 0]
 
-    def possible_moves(self, others):
-        # TODO: Refatorar a parte de remoção dos movimentos inválidos
-        # Está com muito for desnecessário
+#     def possible_moves(self, others):
+#         # TODO: Refatorar a parte de remoção dos movimentos inválidos
+#         # Está com muito for desnecessário
 
-        moves = []
+#         moves = []
 
-        # Remove o Tei para verificar possíveis ameaças
-        backup = self.square
-        self.square = None
+#         # Remove o Tei para verificar possíveis ameaças
+#         backup = self.square
+#         self.square = None
 
-        for direction in self.directions:
-            move = (backup[0] + direction[0],
-                    backup[1] + direction[1])
+#         for direction in self.directions:
+#             move = (backup[0] + direction[0],
+#                     backup[1] + direction[1])
 
-            if -1 < move[0] < 8 and -1 < move[1] < 8:
-                for enemy in others[self.opponent]:
-                    if enemy.square is not None and move in enemy.possible_takes(others):
-                        break
-                else:
-                    moves.append(move)
+#             if -1 < move[0] < 8 and -1 < move[1] < 8:
+#                 for enemy in others[self.opponent]:
+#                     if enemy.square is not None and move in enemy.possible_takes(others):
+#                         break
+#                 else:
+#                     moves.append(move)
 
-        self.square = backup
+#         self.square = backup
 
-        in_check = False
+#         in_check = False
 
-        for enemy in others[self.opponent]:
-            if enemy.square is not None and self.square in enemy.possible_takes(others):
-                in_check = True
-                break
+#         for enemy in others[self.opponent]:
+#             if enemy.square is not None and self.square in enemy.possible_takes(others):
+#                 in_check = True
+#                 break
 
-        # [Move]: Castling
-        # O Rei não pode estar em cheque no castling
-        if self.first_move and not in_check:
-            for ally in others[self.color]:
-                if type(ally) is Rook:
-                    if ally.first_move and ally.position:
-                        direction = 1 if ally.position[1] - \
-                            self.square[1] > 0 else -1
+#         # [Move]: Castling
+#         # O Rei não pode estar em cheque no castling
+#         if self.first_move and not in_check:
+#             for ally in others[self.color]:
+#                 if type(ally) is Rook:
+#                     if ally.first_move and ally.position:
+#                         direction = 1 if ally.position[1] - \
+#                             self.square[1] > 0 else -1
 
-                        if self.square in ally.possible_moves(others):
-                            move = (self.square[0],
-                                    self.square[1] + 2 * direction)
+#                         if self.square in ally.possible_moves(others):
+#                             move = (self.square[0],
+#                                     self.square[1] + 2 * direction)
 
-                            # Remove o movimento caso o Rei fique em cheque
-                            for enemy in others[self.opponent]:
-                                if enemy.square is not None and move in enemy.possible_takes(others):
-                                    break
-                            else:
-                                moves.append(move)
+#                             # Remove o movimento caso o Rei fique em cheque
+#                             for enemy in others[self.opponent]:
+#                                 if enemy.square is not None and move in enemy.possible_takes(others):
+#                                     break
+#                             else:
+#                                 moves.append(move)
 
-        return moves
+#         return moves
 
-    def possible_takes(self, others):
-        takes = []
+#     def possible_takes(self, others):
+#         takes = []
 
-        for direction in self.directions:
-            move = (self.square[0] + direction[0],
-                    self.square[1] + direction[1])
+#         for direction in self.directions:
+#             move = (self.square[0] + direction[0],
+#                     self.square[1] + direction[1])
 
-            if -1 < move[0] < 8 and -1 < move[1] < 8:
-                takes.append(move)
+#             if -1 < move[0] < 8 and -1 < move[1] < 8:
+#                 takes.append(move)
 
-        return takes
+#         return takes
 
-    def __repr__(self) -> str:
-        return super().__repr__() + 'K'
+#     def __repr__(self) -> str:
+#         return super().__repr__() + 'K'
