@@ -11,6 +11,7 @@ class ChessBoard(Board):
     def reset(self):
         self.turn = Color.WHITE
         self.running = True
+        self.pieces.clear()
 
         default = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
