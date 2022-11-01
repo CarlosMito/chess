@@ -12,3 +12,9 @@ class Knight(Piece):
 
     def __init__(self, color, square=None):
         super().__init__(color, square)
+
+    @property
+    def code(self) -> str:
+        code = "N"
+        colorname = str(self.color)
+        return f"{colorname[0]}{code}"

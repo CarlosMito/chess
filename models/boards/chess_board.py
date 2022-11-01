@@ -1,6 +1,5 @@
-from models.pieces.piece import Color
-from models.pieces.rook import Rook
 from .board import Board
+from models.pieces.piece import Color
 from models.pieces import *
 
 
@@ -13,13 +12,14 @@ class ChessBoard(Board):
         self.turn = Color.WHITE
         self.running = True
 
-        default = {Rook, Knight, Bishop, Queen, King}
+        default = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
         for index in range(self.size):
-            white = Pawn(Color.WHITE, (1, index))
-            black = Pawn(Color.BLACK, (6, index))
-            self.pieces.append(white)
-            self.pieces.append(black)
+
+            whites = [Pawn(Color.WHITE, (1, index)), default[index](Color.WHITE, (0, index))]
+            blacks = [Pawn(Color.BLACK, (6, index)), default[index](Color.BLACK, (7, index))]
+
+            self.pieces += whites + blacks
 
     def clear(self):
         self.turn = None

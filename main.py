@@ -82,7 +82,7 @@ def debug():
     print(Rook(Color.WHITE).code)
 
     # print(Board(4))
-    print(ChessBoard())
+    print(ChessBoard().pieces)
     # print(Knight(Color.BLACK))
 
     # print(get_square((7, 7)))
