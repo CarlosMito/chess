@@ -4,11 +4,14 @@ import pygame
 # from utils.matrix import *
 
 from models import Pawn
+from models.boards.board import Board
+from models.boards.chess_board import ChessBoard
 
 from models.pieces.piece import Piece
 from models.pieces.piece import Color
 from models.pieces.knight import Knight
-from utils.transformer import get_square
+from models.pieces.rook import Rook
+from utils.position import Position
 
 # Pieces image by User:Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
 
@@ -69,15 +72,20 @@ from utils.transformer import get_square
 
 
 def debug():
-    print(Color(1))
-    print(Color(-1))
+    pass
+    # print(Color(1))
+    # print(Color(-1))
 
-    print(Piece(Color.WHITE))
-    print(Pawn(Color.WHITE))
-    print(Pawn(Color.WHITE))
-    print(Knight(Color.BLACK))
+    # print(Piece(Color.WHITE))
+    # print(Pawn(Color.WHITE))
+    print(Rook(Color.WHITE))
+    print(Rook(Color.WHITE).code)
 
-    print(get_square((7, 7)))
+    # print(Board(4))
+    print(ChessBoard())
+    # print(Knight(Color.BLACK))
+
+    # print(get_square((7, 7)))
 
 
 if __name__ == '__main__':

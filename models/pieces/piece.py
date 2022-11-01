@@ -1,5 +1,7 @@
 from enum import Enum
 from abc import ABC, abstractmethod
+from utils.position import Position
+from typing import Tuple
 
 
 class Color(Enum):
@@ -11,43 +13,50 @@ class Color(Enum):
 
 
 class Piece(ABC):
-    def __init__(self, color: Color, position=None):
+
+    @abstractmethod
+    def __init__(self, color: Color, position: Tuple[int, int] | None = None):
         self.color = color
         self.position = position
         self.first_move = True
-        self.directions = []
-
-    def possible_moves(self, others):
-        moves = []
-
-        for direction in self.directions:
-            move = (self.position[0] + direction[0],
-                    self.position[1] + direction[1])
-
-            blocked = False
-
-            while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
-                moves.append(move)
-
-                for color in others:
-                    for piece in others[color]:
-                        if move == piece.square:
-                            blocked = True
-                            break
-
-                    if blocked:
-                        break
-
-                move = (move[0] + direction[0], move[1] + direction[1])
-
-        return moves
-
-    def possible_takes(self, others):
-        return self.possible_moves(others)
 
     @property
-    def opponent(self):
-        return 'white' if self.color == 'black' else 'black'
+    def code(self) -> str:
+        piecename = self.__class__.__name__
+        colorname = str(self.color)
+        return f"{colorname[0]}{piecename[0]}"
+
+    # def possible_moves(self, others):
+    #     moves = []
+
+    #     for direction in self.directions:
+    #         move = (self.position[0] + direction[0],
+    #                 self.position[1] + direction[1])
+
+    #         blocked = False
+
+    #         while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
+    #             moves.append(move)
+
+    #             for color in others:
+    #                 for piece in others[color]:
+    #                     if move == piece.square:
+    #                         blocked = True
+    #                         break
+
+    #                 if blocked:
+    #                     break
+
+    #             move = (move[0] + direction[0], move[1] + direction[1])
+
+    #     return moves
+
+    # def possible_takes(self, others):
+    #     return self.possible_moves(others)
+
+    # @property
+    # def opponent(self):
+    #     return 'white' if self.color == 'black' else 'black'
 
     def __str__(self) -> str:
         piecename = self.__class__.__name__

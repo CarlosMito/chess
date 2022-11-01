@@ -2,9 +2,10 @@ from .piece import Piece
 
 
 class Pawn(Piece):
+
     def __init__(self, color, position=None):
         super().__init__(color, position)
-        self.direction = self.color.value
+        # self.direction = self.color.value
 
     # def possible_moves(self, others):
     #     moves = []
