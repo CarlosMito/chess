@@ -41,6 +41,7 @@ class Board(ABC):
                 other.position = None
 
         piece.position = coordinate
+        piece.first_move = False
 
     def __str__(self):
 

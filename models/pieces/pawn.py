@@ -1,15 +1,47 @@
+from typing import List
 from .piece import Piece
 
 
 class Pawn(Piece):
 
-    movements = [(0, 1)]
+    movements = [(1, 0)]
     infinite = False
     jumps = False
 
     def __init__(self, color, position=None):
         super().__init__(color, position)
         # self.direction = self.color.value
+
+    def get_moves(self, pieces: List[Piece], limit: int = 8):
+        """
+        Params
+        ------
+
+        - pieces : A list of all the other pieces on the board.
+        - limit : Corresponds to the board size the piece is on.
+        """
+
+        moves = []
+
+        allies = [other.position for other in pieces if other.color == self.color]
+        enemies = [other.position for other in pieces if other.color != self.color]
+
+        direction = Pawn.movements[0][0] * self.color.value
+
+        square = (self.position[0] + direction, self.position[1])
+
+        if -1 < square[0] < limit and -1 < square[1] < limit:
+            if square not in allies and square not in enemies:
+                moves.append(square)
+
+        if self.first_move and moves:
+            square = (self.position[0] + 2 * direction, self.position[1])
+
+            if -1 < square[0] < limit and -1 < square[1] < limit:
+                if square not in allies and square not in enemies:
+                    moves.append(square)
+
+        return moves
 
     # def possible_moves(self, others):
     #     moves = []

@@ -8,8 +8,6 @@ class ChessBoard(Board):
         super().__init__(8)
         self.reset()
 
-        # self.pieces[0].get_moves(self.pieces)
-
     def reset(self):
         self.turn = Color.WHITE
         self.running = True

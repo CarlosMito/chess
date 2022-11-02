@@ -48,12 +48,15 @@ class Piece(ABC):
             square = (self.position[0] + movement[0], self.position[1] + movement[1])
 
             if -1 < square[0] < limit and -1 < square[1] < limit:
-                for other in pieces:
-                    other.position
-                    moves.append(square)
 
-            while self.infinite:
-                square = (square[0] + movement[0], square[1] + movement[1])
+                if square in allies:
+                    continue
+                # for other in pieces:
+                #     other.position
+                moves.append(square)
+
+            # while self.infinite:
+            #     square = (square[0] + movement[0], square[1] + movement[1])
 
         return moves
 

@@ -1,14 +1,13 @@
-from turtle import color
-from models.boards.board import Board
-import os
+from turtle import width
 import pygame
+from models.boards.board import Board
 from enum import Enum
 from pathlib import Path
 
 # from game.models.board import Board
 # from game.models.pieces.piece import *
 
-# Ferramenta para debug
+# Ferramenta para DEBUG
 IGNORE_TURN = True
 
 
@@ -16,9 +15,11 @@ class Colors(Enum):
     WHITE = (250, 250, 250)
     BLUE = (90, 150, 170)
     GREEN = (120, 230, 120)
-    DARK_GREEN = (30, 120, 30)
     RED = (230, 120, 120)
+    DARK_GREEN = (30, 120, 30)
     DARK_RED = (120, 30, 30)
+    DARK_BLUE = (20, 40, 80)
+    GREY = (80, 80, 80, 80)
     BLACK = (30, 30, 30)
 
 
@@ -35,7 +36,7 @@ class BoardSurface:
             'black': {}
         }
 
-        self.surface = pygame.Surface((board.size * size, board.size * size))
+        self.surface = pygame.Surface((board.size * size, board.size * size), pygame.SRCALPHA)
 
         self.load_images()
         self.update()
@@ -57,11 +58,9 @@ class BoardSurface:
     def draw_pieces(self):
         for piece in self.board.pieces:
             if piece.position is not None and piece != self.__selected:
-                x = piece.position[0]
-                y = piece.position[1]
 
                 # O índice da linha define a coordenada Y da imagem
-                coordinate = (y * self.size, x * self.size)
+                coordinate = (piece.position[1] * self.size, piece.position[0] * self.size)
 
                 color = piece.color.name.lower()
                 name = piece.__class__.__name__.lower()
@@ -70,7 +69,6 @@ class BoardSurface:
 
     def draw_selected(self, position):
         if self.__selected:
-
             color = self.__selected.color.name.lower()
             name = self.__selected.__class__.__name__.lower()
 
@@ -95,7 +93,7 @@ class BoardSurface:
                 # Adiciona as jogadas por turnos
                 if piece is not None and (self.board.turn == piece.color or IGNORE_TURN):
                     self.__selected = piece
-                    # self.__possible = piece.possible_moves(self.board.pieces)
+                    self.__possible = piece.get_moves(self.board.pieces, self.board.size)
 
                     # occupied = {
                     #     'ally': self.board.get_occupied(piece.color),
@@ -119,35 +117,56 @@ class BoardSurface:
             j = position[0] // self.size
 
             if self.board.is_inside((i, j)):
-                # self.board.matrix[i][j] =
-                # if (i, j) in self.__possible:
-                self.board.move(self.__selected, (i, j))
+                if (i, j) in self.__possible:
+                    self.board.move(self.__selected, (i, j))
 
             self.__selected = None
 
-    # def draw_moves(self):
-    #     border_width = 2
+    def draw_moves(self):
+        if self.__selected:
+            for move in self.__possible:
+                x = self.size * move[1]
+                y = self.size * move[0]
 
-    #     if self.__selected:
-    #         for move in self.__possible:
-    #             x = self.size * move[1]
-    #             y = self.size * move[0]
+                center = (x + self.size / 2, y + self.size / 2)
+                occupied = [piece.position for piece in self.board.pieces]
 
-    #             pygame.draw.rect(
-    #                 self.surface,
-    #                 Colors.DARK_GREEN.value,
-    #                 (x, y, self.size, self.size))
+                if move in occupied:
+                    pygame.draw.rect(
+                        self.surface,
+                        Colors.DARK_RED.value,
+                        (x, y, self.size, self.size)
+                    )
 
-    #             inner_size = self.size - border_width * 2
+                    border = 4
 
-    #             pygame.draw.rect(
-    #                 self.surface,
-    #                 Colors.GREEN.value,
-    #                 (x + border_width, y + border_width, inner_size, inner_size))
+                    pygame.draw.rect(
+                        self.surface,
+                        Colors.RED.value,
+                        (x + border / 2, y + border / 2, self.size - border, self.size - border)
+                    )
+                else:
+                    colors = [Colors.BLACK.value, Colors.WHITE.value] if (move[0] + move[1]) % 2 else [Colors.GREY.value, Colors.WHITE.value]
+
+                    pygame.draw.circle(
+                        self.surface,
+                        colors[0],
+                        center,
+                        6
+                    )
+
+                    border = 2
+
+                    pygame.draw.circle(
+                        self.surface,
+                        colors[1],
+                        center,
+                        6 - border
+                    )
 
     def update(self, event=None):
         self.draw_board()
-        # self.draw_moves()
+        self.draw_moves()
         self.draw_pieces()
 
         if event is not None:
