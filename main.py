@@ -46,21 +46,20 @@ def play():
             if event.type == pygame.QUIT:
                 running = False
 
-            # elif event.type == pygame.MOUSEBUTTONDOWN:
-            #     screen.select(event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                surface.select(event.pos)
 
-            # elif event.type == pygame.MOUSEBUTTONUP:
-            #     screen.unselect(event.pos)
-            #     screen.update()
-            #     pass
+            elif event.type == pygame.MOUSEBUTTONUP:
+                surface.unselect(event.pos)
+                surface.update()
 
-            # elif event.type == pygame.MOUSEMOTION:
-            #     screen.update(event)
+            elif event.type == pygame.MOUSEMOTION:
+                surface.update(event)
 
             # elif event.type == pygame.KEYDOWN:
             #     if event.key == pygame.K_r:
-            #         screen.board.reset()
-            #         screen.update()
+            #         surface.board.reset()
+            #         surface.update()
 
         pygame.display.flip()
 

@@ -1,3 +1,4 @@
+from turtle import color
 from models.boards.board import Board
 import os
 import pygame
@@ -8,7 +9,7 @@ from pathlib import Path
 # from game.models.pieces.piece import *
 
 # Ferramenta para debug
-IGNORE_TURN = False
+IGNORE_TURN = True
 
 
 class Colors(Enum):
@@ -56,7 +57,7 @@ class BoardSurface:
     def draw_pieces(self):
         for piece in self.board.pieces:
             if piece.position is not None and piece != self.__selected:
-                x = self.board.size - piece.position[0] - 1
+                x = piece.position[0]
                 y = piece.position[1]
 
                 # O índice da linha define a coordenada Y da imagem
@@ -67,57 +68,62 @@ class BoardSurface:
 
                 self.surface.blit(self.__images[color][name], coordinate)
 
-    # def draw_selected(self, position):
-    #     if self.__selected:
-    #         image = self.__images[self.__selected.color][self.__selected.name]
+    def draw_selected(self, position):
+        if self.__selected:
 
-    #         size = image.get_size()
-    #         rectangle = image.get_rect()
+            color = self.__selected.color.name.lower()
+            name = self.__selected.__class__.__name__.lower()
 
-    #         centered = (position[0] - size[0] / 2, position[1] - size[1] / 2)
+            image = self.__images[color][name]
 
-    #         rectangle.move_ip(centered)
-    #         self.surface.blit(image, rectangle)
+            size = image.get_size()
+            rectangle = image.get_rect()
 
-    # def select(self, position):
-    #     if self.board.running and not self.__selected:
-    #         i = position[1] // self.size
-    #         j = position[0] // self.size
+            centered = (position[0] - size[0] / 2, position[1] - size[1] / 2)
 
-    #         if -1 < i < self.board.size and -1 < j < self.board.size:
-    #             piece = self.board.get_piece((i, j))
+            rectangle.move_ip(centered)
+            self.surface.blit(image, rectangle)
 
-    #             # Adiciona as jogadas por turnos
-    #             if piece is not None and (self.board.next == piece.color or IGNORE_TURN):
-    #                 self.__selected = piece
-    #                 self.__possible = piece.possible_moves(self.board.pieces)
+    def select(self, position):
+        if self.board.running and not self.__selected:
+            i = position[1] // self.size
+            j = position[0] // self.size
 
-    #                 occupied = {
-    #                     'ally': self.board.get_occupied(piece.color),
-    #                     'enemy': self.board.get_occupied(piece.opponent)
-    #                 }
+            if self.board.is_inside((i, j)):
+                piece = self.board.matrix[i][j]
 
-    #                 # Remove os movimentos que capturam peças aliadas
-    #                 for move in self.__possible[::]:
-    #                     if move in occupied['ally']:
-    #                         self.__possible.remove(move)
+                # Adiciona as jogadas por turnos
+                if piece is not None and (self.board.turn == piece.color or IGNORE_TURN):
+                    self.__selected = piece
+                    # self.__possible = piece.possible_moves(self.board.pieces)
 
-    #                 # Adiciona os movimentos de captura do peão
-    #                 if type(piece) is Pawn:
-    #                     for square in piece.possible_takes(self.board.pieces):
-    #                         if square in occupied['enemy'] or square == self.board.passant[piece.opponent]:
-    #                             self.__possible.append(square)
+                    # occupied = {
+                    #     'ally': self.board.get_occupied(piece.color),
+                    #     'enemy': self.board.get_occupied(piece.opponent)
+                    # }
 
-    # def unselect(self, position):
-    #     if self.__selected:
-    #         i = position[1] // self.size
-    #         j = position[0] // self.size
+                    # # Remove os movimentos que capturam peças aliadas
+                    # for move in self.__possible[::]:
+                    #     if move in occupied['ally']:
+                    #         self.__possible.remove(move)
 
-    #         if -1 < i < self.board.size and -1 < j < self.board.size:
-    #             if (i, j) in self.__possible:
-    #                 self.board.move(self.__selected, (i, j))
+                    # # Adiciona os movimentos de captura do peão
+                    # if type(piece) is Pawn:
+                    #     for square in piece.possible_takes(self.board.pieces):
+                    #         if square in occupied['enemy'] or square == self.board.passant[piece.opponent]:
+                    #             self.__possible.append(square)
 
-    #         self.__selected = None
+    def unselect(self, position):
+        if self.__selected:
+            i = position[1] // self.size
+            j = position[0] // self.size
+
+            if self.board.is_inside((i, j)):
+                # self.board.matrix[i][j] =
+                # if (i, j) in self.__possible:
+                self.board.move(self.__selected, (i, j))
+
+            self.__selected = None
 
     # def draw_moves(self):
     #     border_width = 2
@@ -144,7 +150,7 @@ class BoardSurface:
         # self.draw_moves()
         self.draw_pieces()
 
-        # if event is not None:
-        #     self.draw_selected(event.pos)
+        if event is not None:
+            self.draw_selected(event.pos)
 
         self.parent.blit(self.surface, (0, 0))

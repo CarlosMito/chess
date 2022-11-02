@@ -1,9 +1,7 @@
-from typing import List
-from models.pieces.piece import Color, Piece
-from models.pieces.rook import Rook
+from typing import List, Tuple
+from models.pieces.piece import Piece
 from utils.exceptions import *
 from abc import ABC, abstractmethod
-# from game.models.pieces.piece import *
 
 
 class Board(ABC):
@@ -12,6 +10,8 @@ class Board(ABC):
     def __init__(self, size):
         self.size: int = size
         self.pieces: List[Piece] = []
+        self.running: bool = False
+        self.turn: int = 0
 
     @abstractmethod
     def reset(self):
@@ -22,21 +22,31 @@ class Board(ABC):
         pass
 
     @property
-    def board(self) -> List[List[Piece | None]]:
-        board = [[None for _ in range(self.size)] for _ in range(self.size)]
+    def matrix(self) -> List[List[Piece | None]]:
+        matrix = [[None for _ in range(self.size)] for _ in range(self.size)]
 
         for piece in self.pieces:
             if position := piece.position:
-                board[position[0]][position[1]] = piece
+                matrix[position[0]][position[1]] = piece
 
-        # I think there's no problem reversing this
-        return board[::-1]
+        return matrix
+
+    def is_inside(self, coordinate: Tuple[int, int]):
+        return (-1 < coordinate[0] < self.size) and (-1 < coordinate[1] < self.size)
+
+    def move(self, piece: Piece, coordinate: Tuple[int, int]):
+
+        for other in self.pieces:
+            if other.position == coordinate:
+                other.position = None
+
+        piece.position = coordinate
 
     def __str__(self):
 
         rows = []
 
-        for row in self.board:
+        for row in self.matrix[::-1]:
             codes = list(map(lambda e: "  " if e is None else e.code, row))
             rows.append(f"[ {' '.join(codes)} ]")
 
