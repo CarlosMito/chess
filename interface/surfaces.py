@@ -1,10 +1,11 @@
+from models.boards.board import Board
 import os
-import sys
 import pygame
 from enum import Enum
+from pathlib import Path
 
-from game.models.board import Board
-from game.models.pieces.piece import *
+# from game.models.board import Board
+# from game.models.pieces.piece import *
 
 # Ferramenta para debug
 IGNORE_TURN = False
@@ -21,7 +22,7 @@ class Colors(Enum):
 
 
 class BoardSurface:
-    def __init__(self, parent, board, size=45):
+    def __init__(self, parent: pygame.Surface, board: Board, size: int = 45):
         self.parent = parent
         self.board = board
         self.size = size
@@ -41,9 +42,7 @@ class BoardSurface:
     def load_images(self):
         for color in self.__images:
             for name in ['pawn', 'rook', 'knight', 'bishop', 'king', 'queen']:
-                path = os.path.join('assets', 'images',
-                                    'pieces', color, name + '.svg')
-
+                path = Path(f"assets/images/pieces/{color}/{name}.svg")
                 self.__images[color][name] = pygame.image.load(path)
 
     def draw_board(self):
@@ -54,95 +53,95 @@ class BoardSurface:
                     Colors.BLUE.value if (i + j) % 2 else Colors.WHITE.value,
                     (self.size * i, self.size * j, self.size, self.size))
 
-    def draw_pieces(self):
-        for color in self.board.pieces:
-            for piece in self.board.pieces[color]:
-                if piece.square is not None and piece != self.__selected:
-                    # O número da linha define a coordenada y da imagem
-                    position = (piece.square[1] * self.size,
-                                piece.square[0] * self.size)
+    # def draw_pieces(self):
+    #     for color in self.board.pieces:
+    #         for piece in self.board.pieces[color]:
+    #             if piece.square is not None and piece != self.__selected:
+    #                 # O número da linha define a coordenada y da imagem
+    #                 position = (piece.square[1] * self.size,
+    #                             piece.square[0] * self.size)
 
-                    self.surface.blit(
-                        self.__images[color][piece.name], position)
+    #                 self.surface.blit(
+    #                     self.__images[color][piece.name], position)
 
-    def draw_selected(self, position):
-        if self.__selected:
-            image = self.__images[self.__selected.color][self.__selected.name]
+    # def draw_selected(self, position):
+    #     if self.__selected:
+    #         image = self.__images[self.__selected.color][self.__selected.name]
 
-            size = image.get_size()
-            rectangle = image.get_rect()
+    #         size = image.get_size()
+    #         rectangle = image.get_rect()
 
-            centered = (position[0] - size[0] / 2, position[1] - size[1] / 2)
+    #         centered = (position[0] - size[0] / 2, position[1] - size[1] / 2)
 
-            rectangle.move_ip(centered)
-            self.surface.blit(image, rectangle)
+    #         rectangle.move_ip(centered)
+    #         self.surface.blit(image, rectangle)
 
-    def select(self, position):
-        if self.board.running and not self.__selected:
-            i = position[1] // self.size
-            j = position[0] // self.size
+    # def select(self, position):
+    #     if self.board.running and not self.__selected:
+    #         i = position[1] // self.size
+    #         j = position[0] // self.size
 
-            if -1 < i < self.board.size and -1 < j < self.board.size:
-                piece = self.board.get_piece((i, j))
+    #         if -1 < i < self.board.size and -1 < j < self.board.size:
+    #             piece = self.board.get_piece((i, j))
 
-                # Adiciona as jogadas por turnos
-                if piece is not None and (self.board.next == piece.color or IGNORE_TURN):
-                    self.__selected = piece
-                    self.__possible = piece.possible_moves(self.board.pieces)
+    #             # Adiciona as jogadas por turnos
+    #             if piece is not None and (self.board.next == piece.color or IGNORE_TURN):
+    #                 self.__selected = piece
+    #                 self.__possible = piece.possible_moves(self.board.pieces)
 
-                    occupied = {
-                        'ally': self.board.get_occupied(piece.color),
-                        'enemy': self.board.get_occupied(piece.opponent)
-                    }
+    #                 occupied = {
+    #                     'ally': self.board.get_occupied(piece.color),
+    #                     'enemy': self.board.get_occupied(piece.opponent)
+    #                 }
 
-                    # Remove os movimentos que capturam peças aliadas
-                    for move in self.__possible[::]:
-                        if move in occupied['ally']:
-                            self.__possible.remove(move)
+    #                 # Remove os movimentos que capturam peças aliadas
+    #                 for move in self.__possible[::]:
+    #                     if move in occupied['ally']:
+    #                         self.__possible.remove(move)
 
-                    # Adiciona os movimentos de captura do peão
-                    if type(piece) is Pawn:
-                        for square in piece.possible_takes(self.board.pieces):
-                            if square in occupied['enemy'] or square == self.board.passant[piece.opponent]:
-                                self.__possible.append(square)
+    #                 # Adiciona os movimentos de captura do peão
+    #                 if type(piece) is Pawn:
+    #                     for square in piece.possible_takes(self.board.pieces):
+    #                         if square in occupied['enemy'] or square == self.board.passant[piece.opponent]:
+    #                             self.__possible.append(square)
 
-    def unselect(self, position):
-        if self.__selected:
-            i = position[1] // self.size
-            j = position[0] // self.size
+    # def unselect(self, position):
+    #     if self.__selected:
+    #         i = position[1] // self.size
+    #         j = position[0] // self.size
 
-            if -1 < i < self.board.size and -1 < j < self.board.size:
-                if (i, j) in self.__possible:
-                    self.board.move(self.__selected, (i, j))
+    #         if -1 < i < self.board.size and -1 < j < self.board.size:
+    #             if (i, j) in self.__possible:
+    #                 self.board.move(self.__selected, (i, j))
 
-            self.__selected = None
+    #         self.__selected = None
 
-    def draw_moves(self):
-        border_width = 2
+    # def draw_moves(self):
+    #     border_width = 2
 
-        if self.__selected:
-            for move in self.__possible:
-                x = self.size * move[1]
-                y = self.size * move[0]
+    #     if self.__selected:
+    #         for move in self.__possible:
+    #             x = self.size * move[1]
+    #             y = self.size * move[0]
 
-                pygame.draw.rect(
-                    self.surface,
-                    Colors.DARK_GREEN.value,
-                    (x, y, self.size, self.size))
+    #             pygame.draw.rect(
+    #                 self.surface,
+    #                 Colors.DARK_GREEN.value,
+    #                 (x, y, self.size, self.size))
 
-                inner_size = self.size - border_width * 2
+    #             inner_size = self.size - border_width * 2
 
-                pygame.draw.rect(
-                    self.surface,
-                    Colors.GREEN.value,
-                    (x + border_width, y + border_width, inner_size, inner_size))
+    #             pygame.draw.rect(
+    #                 self.surface,
+    #                 Colors.GREEN.value,
+    #                 (x + border_width, y + border_width, inner_size, inner_size))
 
     def update(self, event=None):
         self.draw_board()
-        self.draw_moves()
-        self.draw_pieces()
+        # self.draw_moves()
+        # self.draw_pieces()
 
-        if event is not None:
-            self.draw_selected(event.pos)
+        # if event is not None:
+        #     self.draw_selected(event.pos)
 
         self.parent.blit(self.surface, (0, 0))

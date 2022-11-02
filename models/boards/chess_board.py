@@ -8,6 +8,8 @@ class ChessBoard(Board):
         super().__init__(8)
         self.reset()
 
+        # self.pieces[0].get_moves(self.pieces)
+
     def reset(self):
         self.turn = Color.WHITE
         self.running = True
@@ -17,8 +19,10 @@ class ChessBoard(Board):
 
         for index in range(self.size):
 
-            whites = [Pawn(Color.WHITE, (1, index)), default[index](Color.WHITE, (0, index))]
-            blacks = [Pawn(Color.BLACK, (6, index)), default[index](Color.BLACK, (7, index))]
+            # Pawn(Color.WHITE, (1, index)),
+            # Pawn(Color.BLACK, (6, index)),
+            whites = [default[index](Color.WHITE, (0, index))]
+            blacks = [default[index](Color.BLACK, (7, index))]
 
             self.pieces += whites + blacks
 

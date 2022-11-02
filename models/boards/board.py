@@ -10,8 +10,8 @@ class Board(ABC):
 
     @abstractmethod
     def __init__(self, size):
-        self.size = size
-        self.pieces = []
+        self.size: int = size
+        self.pieces: List[Piece] = []
 
     @abstractmethod
     def reset(self):

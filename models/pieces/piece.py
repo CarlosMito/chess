@@ -30,7 +30,7 @@ class Piece(ABC):
         colorname = str(self.color)
         return f"{colorname[0]}{piecename[0]}"
 
-    def get_moves(self, pieces: List[Piece], limit: int):
+    def get_moves(self, pieces: List[Piece], limit: int = 8):
         """
         Params
         ------
@@ -40,6 +40,7 @@ class Piece(ABC):
         """
 
         moves = []
+
         allies = [other.position for other in pieces if other.color == self.color]
         enemies = [other.position for other in pieces if other.color != self.color]
 
