@@ -1,4 +1,5 @@
-from typing import Tuple
+from __future__ import annotations
+from typing import Tuple, List
 from enum import Enum
 from abc import ABC, abstractmethod
 
@@ -13,6 +14,10 @@ class Color(Enum):
 
 class Piece(ABC):
 
+    movements = []
+    infinite = None
+    jumps = None
+
     @abstractmethod
     def __init__(self, color: Color, position: Tuple[int, int] | None = None):
         self.color = color
@@ -24,6 +29,68 @@ class Piece(ABC):
         piecename = self.__class__.__name__
         colorname = str(self.color)
         return f"{colorname[0]}{piecename[0]}"
+
+    def get_moves(self, pieces: List[Piece], limit: int):
+        """
+        Params
+        ------
+
+        - pieces : A list of all the other pieces on the board.
+        - limit : Corresponds to the board size the piece is on.
+        """
+
+        moves = []
+        allies = [other.position for other in pieces if other.color == self.color]
+        enemies = [other.position for other in pieces if other.color != self.color]
+
+        for movement in self.movements:
+            square = (self.position[0] + movement[0], self.position[1] + movement[1])
+
+            if -1 < square[0] < limit and -1 < square[1] < limit:
+                for other in pieces:
+                    other.position
+                    moves.append(square)
+
+            while self.infinite:
+                square = (square[0] + movement[0], square[1] + movement[1])
+
+        return moves
+
+    #     for direction in self.directions:
+    #         move = (self.position[0] + direction[0],
+    #                 self.position[1] + direction[1])
+
+    #         blocked = False
+
+    #         while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
+    #             moves.append(move)
+
+    #             for color in others:
+    #                 for piece in others[color]:
+    #                     if move == piece.square:
+    #                         blocked = True
+    #                         break
+
+    #                 if blocked:
+    #                     break
+
+    #             move = (move[0] + direction[0], move[1] + direction[1])
+
+    #     return moves
+
+        pass
+
+    # def get_captures(self, others):
+    #     takes = []
+
+    #     for direction in self.directions:
+    #         move = (self.square[0] + direction[0],
+    #                 self.square[1] + direction[1])
+
+    #         if -1 < move[0] < 8 and -1 < move[1] < 8:
+    #             takes.append(move)
+
+    #     return takes
 
     # def possible_moves(self, others):
     #     moves = []
@@ -128,18 +195,6 @@ class Piece(ABC):
 #                                 moves.append(move)
 
 #         return moves
-
-#     def possible_takes(self, others):
-#         takes = []
-
-#         for direction in self.directions:
-#             move = (self.square[0] + direction[0],
-#                     self.square[1] + direction[1])
-
-#             if -1 < move[0] < 8 and -1 < move[1] < 8:
-#                 takes.append(move)
-
-#         return takes
 
 #     def __repr__(self) -> str:
 #         return super().__repr__() + 'K'

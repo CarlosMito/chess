@@ -11,7 +11,6 @@ from models.pieces.piece import Piece
 from models.pieces.piece import Color
 from models.pieces.knight import Knight
 from models.pieces.rook import Rook
-from utils.position import Position
 
 # Pieces image by User:Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
 
