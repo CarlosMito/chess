@@ -36,9 +36,8 @@ def play():
     pygame.display.set_caption('Chess')
 
     running = True
-    board = ChessBoard()
     screen = pygame.display.set_mode((800, 500))
-    surface = BoardSurface(screen, board)
+    surface = BoardSurface(screen, ChessBoard())
 
     while running:
 

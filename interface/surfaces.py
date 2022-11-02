@@ -53,16 +53,19 @@ class BoardSurface:
                     Colors.BLUE.value if (i + j) % 2 else Colors.WHITE.value,
                     (self.size * i, self.size * j, self.size, self.size))
 
-    # def draw_pieces(self):
-    #     for color in self.board.pieces:
-    #         for piece in self.board.pieces[color]:
-    #             if piece.square is not None and piece != self.__selected:
-    #                 # O número da linha define a coordenada y da imagem
-    #                 position = (piece.square[1] * self.size,
-    #                             piece.square[0] * self.size)
+    def draw_pieces(self):
+        for piece in self.board.pieces:
+            if piece.position is not None and piece != self.__selected:
+                x = self.board.size - piece.position[0] - 1
+                y = piece.position[1]
 
-    #                 self.surface.blit(
-    #                     self.__images[color][piece.name], position)
+                # O índice da linha define a coordenada Y da imagem
+                coordinate = (y * self.size, x * self.size)
+
+                color = piece.color.name.lower()
+                name = piece.__class__.__name__.lower()
+
+                self.surface.blit(self.__images[color][name], coordinate)
 
     # def draw_selected(self, position):
     #     if self.__selected:
@@ -139,7 +142,7 @@ class BoardSurface:
     def update(self, event=None):
         self.draw_board()
         # self.draw_moves()
-        # self.draw_pieces()
+        self.draw_pieces()
 
         # if event is not None:
         #     self.draw_selected(event.pos)

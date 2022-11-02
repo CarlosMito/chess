@@ -19,10 +19,8 @@ class ChessBoard(Board):
 
         for index in range(self.size):
 
-            # Pawn(Color.WHITE, (1, index)),
-            # Pawn(Color.BLACK, (6, index)),
-            whites = [default[index](Color.WHITE, (0, index))]
-            blacks = [default[index](Color.BLACK, (7, index))]
+            whites = [Pawn(Color.WHITE, (1, index)), default[index](Color.WHITE, (0, index))]
+            blacks = [Pawn(Color.BLACK, (6, index)), default[index](Color.BLACK, (7, index))]
 
             self.pieces += whites + blacks
 
