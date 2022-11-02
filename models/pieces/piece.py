@@ -30,7 +30,7 @@ class Piece(ABC):
         colorname = str(self.color)
         return f"{colorname[0]}{piecename[0]}"
 
-    def get_moves(self, pieces: List[Piece], limit: int = 8):
+    def get_moves(self, board):
         """
         Params
         ------
@@ -41,13 +41,13 @@ class Piece(ABC):
 
         moves = []
 
-        allies = [other.position for other in pieces if other.color == self.color]
-        enemies = [other.position for other in pieces if other.color != self.color]
+        allies = [other.position for other in board.pieces if other.color == self.color]
+        enemies = [other.position for other in board.pieces if other.color != self.color]
 
         for movement in self.movements:
             square = (self.position[0] + movement[0], self.position[1] + movement[1])
 
-            if -1 < square[0] < limit and -1 < square[1] < limit:
+            if board.is_inside(square):
 
                 if square in allies:
                     continue

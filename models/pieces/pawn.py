@@ -12,7 +12,7 @@ class Pawn(Piece):
         super().__init__(color, position)
         # self.direction = self.color.value
 
-    def get_moves(self, pieces: List[Piece], limit: int = 8):
+    def get_moves(self, board):
         """
         Params
         ------
@@ -21,55 +21,30 @@ class Pawn(Piece):
         - limit : Corresponds to the board size the piece is on.
         """
 
+        # TODO: Implement en passant
+
         moves = []
 
-        allies = [other.position for other in pieces if other.color == self.color]
-        enemies = [other.position for other in pieces if other.color != self.color]
+        allies = [other.position for other in board.pieces if other.color == self.color]
+        enemies = [other.position for other in board.pieces if other.color != self.color]
 
         direction = Pawn.movements[0][0] * self.color.value
 
-        square = (self.position[0] + direction, self.position[1])
+        for i in [1, 2] if self.first_move else [1]:
+            square = (self.position[0] + direction * i, self.position[1])
 
-        if -1 < square[0] < limit and -1 < square[1] < limit:
-            if square not in allies and square not in enemies:
-                moves.append(square)
-
-        if self.first_move and moves:
-            square = (self.position[0] + 2 * direction, self.position[1])
-
-            if -1 < square[0] < limit and -1 < square[1] < limit:
+            if board.is_inside(square):
                 if square not in allies and square not in enemies:
+                    moves.append(square)
+                    continue
+
+                break
+
+        for attack in [-1, 1]:
+            square = (self.position[0] + direction, self.position[1] + attack)
+
+            if board.is_inside(square):
+                if square in enemies:
                     moves.append(square)
 
         return moves
-
-    # def possible_moves(self, others):
-    #     moves = []
-
-    #     if self.position:
-    #         row = self.position[0] + self.direction
-
-    #         occupied = [
-    #             piece.square for color in others for piece in others[color]
-    #         ]
-
-    #         if (row, self.position[1]) not in occupied:
-    #             moves.append((row, self.position[1]))
-
-    #             move = (row + self.direction, self.position[1])
-
-    #             if self.first_move and move not in occupied:
-    #                 moves.append(move)
-
-    #     return moves
-
-    def possible_takes(self, others):
-        if self.position:
-            row = self.position[0] + self.direction
-            return [(row, self.position[1] + 1), (row, self.position[1] - 1)]
-        else:
-            return []
-
-    # def __str__(self) -> str:
-    #     piece = self.__class__.__name__
-    #     return f"[{super().__str__()} {piece.upper()} - {1}]"

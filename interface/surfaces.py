@@ -93,7 +93,7 @@ class BoardSurface:
                 # Adiciona as jogadas por turnos
                 if piece is not None and (self.board.turn == piece.color or IGNORE_TURN):
                     self.__selected = piece
-                    self.__possible = piece.get_moves(self.board.pieces, self.board.size)
+                    self.__possible = piece.get_moves(self.board)
 
                     # occupied = {
                     #     'ally': self.board.get_occupied(piece.color),
