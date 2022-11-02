@@ -45,44 +45,25 @@ class Piece(ABC):
         enemies = [other.position for other in board.pieces if other.color != self.color]
 
         for movement in self.movements:
+
             square = (self.position[0] + movement[0], self.position[1] + movement[1])
+            blocked = False
+            counter = 1
 
-            if board.is_inside(square):
+            while (counter == 1 or self.infinite) and not blocked:
+                i = self.position[0] + movement[0] * counter
+                j = self.position[1] + movement[1] * counter
 
-                if square in allies:
-                    continue
-                # for other in pieces:
-                #     other.position
-                moves.append(square)
+                square = (i, j)
+                inside = board.is_inside(square)
+                blocked = (square in allies + enemies) or not inside
 
-            # while self.infinite:
-            #     square = (square[0] + movement[0], square[1] + movement[1])
+                if inside and square not in allies:
+                    moves.append(square)
+
+                counter += 1
 
         return moves
-
-    #     for direction in self.directions:
-    #         move = (self.position[0] + direction[0],
-    #                 self.position[1] + direction[1])
-
-    #         blocked = False
-
-    #         while -1 < move[0] < 8 and -1 < move[1] < 8 and not blocked:
-    #             moves.append(move)
-
-    #             for color in others:
-    #                 for piece in others[color]:
-    #                     if move == piece.square:
-    #                         blocked = True
-    #                         break
-
-    #                 if blocked:
-    #                     break
-
-    #             move = (move[0] + direction[0], move[1] + direction[1])
-
-    #     return moves
-
-        pass
 
     # def get_captures(self, others):
     #     takes = []
