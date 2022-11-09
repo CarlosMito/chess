@@ -34,15 +34,15 @@ class Board(ABC):
     def is_inside(self, coordinate: Tuple[int, int]):
         return (-1 < coordinate[0] < self.size) and (-1 < coordinate[1] < self.size)
 
-    def move(self, piece: Piece, coordinate: Tuple[int, int]):
+    def move(self, piece: Piece, destination: Tuple[int, int]):
 
         origin = piece.position
 
         for other in self.pieces:
-            if other.position == coordinate:
+            if other.position == destination:
                 other.position = None
 
-        piece.position = coordinate
+        piece.position = destination
         piece.first_move = False
 
         return origin

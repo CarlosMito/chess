@@ -20,8 +20,6 @@ class Pawn(Piece):
         - limit : Corresponds to the board size the piece is on.
         """
 
-        # TODO: Implement en passant
-
         moves = []
 
         allies = [other.position for other in board.pieces if other.color == self.color]

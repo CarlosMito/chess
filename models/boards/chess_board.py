@@ -24,12 +24,12 @@ class ChessBoard(Board):
 
             self.pieces += whites + blacks
 
-    def move(self, piece: Piece, coordinate: Tuple[int, int]):
-        origin = super().move(piece, coordinate)
+    def __apply_en_passant(self, piece, origin, destination):
 
-        if self.en_passant["square"] == coordinate:
+        # Remove pawn if the movement is En Passant
+        if self.en_passant["square"] == destination:
             x = 3 if self.en_passant["color"] is Color.WHITE else 4
-            captured = (x, coordinate[1])
+            captured = (x, destination[1])
 
             for cpiece in self.pieces:
                 if cpiece.position == captured:
@@ -43,6 +43,11 @@ class ChessBoard(Board):
         if isinstance(piece, Pawn) and abs(dy) > 1:
             self.en_passant["color"] = piece.color
             self.en_passant["square"] = (origin[0] - dy // 2, origin[1])
+
+    def move(self, piece: Piece, destination: Tuple[int, int]):
+        origin = super().move(piece, destination)
+
+        self.__apply_en_passant(piece, origin, destination)
 
     def clear(self):
         self.turn = None
