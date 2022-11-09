@@ -1,6 +1,7 @@
 from .board import Board
-from models.pieces.piece import Color
-from models.pieces import *
+from typing import Tuple
+from models.pieces.piece import Color, Piece
+from models.pieces import Pawn, Rook, Knight, Bishop, Queen, King
 
 
 class ChessBoard(Board):
@@ -12,6 +13,7 @@ class ChessBoard(Board):
         self.turn = Color.WHITE
         self.running = True
         self.pieces.clear()
+        self.en_passant = {"color": None, "square": None}
 
         default = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
@@ -21,6 +23,26 @@ class ChessBoard(Board):
             blacks = [Pawn(Color.BLACK, (6, index)), default[index](Color.BLACK, (7, index))]
 
             self.pieces += whites + blacks
+
+    def move(self, piece: Piece, coordinate: Tuple[int, int]):
+        origin = super().move(piece, coordinate)
+
+        if self.en_passant["square"] == coordinate:
+            x = 3 if self.en_passant["color"] is Color.WHITE else 4
+            captured = (x, coordinate[1])
+
+            for cpiece in self.pieces:
+                if cpiece.position == captured:
+                    cpiece.position = None
+
+        # En Passant Rule. The pawn must be captured immediately after the two-square advance.
+        # So there's no need to store the square for both players.
+        self.en_passant = {"color": None, "square": None}
+        dy = origin[0] - piece.position[0]
+
+        if isinstance(piece, Pawn) and abs(dy) > 1:
+            self.en_passant["color"] = piece.color
+            self.en_passant["square"] = (origin[0] - dy // 2, origin[1])
 
     def clear(self):
         self.turn = None

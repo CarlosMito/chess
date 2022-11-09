@@ -10,7 +10,6 @@ class Pawn(Piece):
 
     def __init__(self, color, position=None):
         super().__init__(color, position)
-        # self.direction = self.color.value
 
     def get_moves(self, board):
         """
@@ -44,7 +43,15 @@ class Pawn(Piece):
             square = (self.position[0] + direction, self.position[1] + attack)
 
             if board.is_inside(square):
-                if square in enemies:
+
+                en_passant = False
+
+                if board.en_passant["square"] is not None:
+                    epcolor = self.color.opposite == board.en_passant["color"]
+                    epsquare = square == board.en_passant["square"]
+                    en_passant = epcolor and epsquare
+
+                if square in enemies or en_passant:
                     moves.append(square)
 
         return moves

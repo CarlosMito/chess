@@ -36,12 +36,16 @@ class Board(ABC):
 
     def move(self, piece: Piece, coordinate: Tuple[int, int]):
 
+        origin = piece.position
+
         for other in self.pieces:
             if other.position == coordinate:
                 other.position = None
 
         piece.position = coordinate
         piece.first_move = False
+
+        return origin
 
     def __str__(self):
 
