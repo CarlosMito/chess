@@ -19,7 +19,11 @@ class King(Piece):
     def get_moves(self, board):
         moves = super().get_moves(board)
 
+        # [CASTLING]
         if self.first_move:
+
+            # TODO: Disable castling when an enemy is striking the path between the King and the Rook
+
             allies = [other for other in board.pieces if other.color == self.color]
             rooks = [piece for piece in allies if isinstance(piece, Rook)]
             occupied_squares = [other.position for other in board.pieces]

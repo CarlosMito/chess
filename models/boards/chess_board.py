@@ -24,12 +24,12 @@ class ChessBoard(Board):
 
             self.pieces += whites + blacks
 
-    def __apply_en_passant(self, piece, origin, destination):
+    def __apply_en_passant(self, piece: Piece, origin: Tuple[int, int]):
 
         # Remove pawn if the movement is En Passant
-        if self.en_passant["square"] == destination:
+        if self.en_passant["square"] == piece.position:
             x = 3 if self.en_passant["color"] is Color.WHITE else 4
-            captured = (x, destination[1])
+            captured = (x, piece.position[1])
 
             for cpiece in self.pieces:
                 if cpiece.position == captured:
@@ -38,16 +38,38 @@ class ChessBoard(Board):
         # En Passant Rule. The pawn must be captured immediately after the two-square advance.
         # So there's no need to store the square for both players.
         self.en_passant = {"color": None, "square": None}
-        dy = origin[0] - piece.position[0]
+        dy = piece.position[0] - origin[0]
 
         if isinstance(piece, Pawn) and abs(dy) > 1:
             self.en_passant["color"] = piece.color
-            self.en_passant["square"] = (origin[0] - dy // 2, origin[1])
+            self.en_passant["square"] = (origin[0] + dy // 2, origin[1])
+
+    def __apply_castling(self, piece: Piece, origin: Tuple[int, int]):
+
+        dx = piece.position[1] - origin[1]
+        direction = 1 if dx > 0 else -1
+
+        if isinstance(piece, King) and abs(dx) > 1:
+
+            rook = None
+
+            for cpiece in self.pieces:
+                if cpiece.color == piece.color and isinstance(cpiece, Rook):
+                    cdx = cpiece.position[1] - origin[1]
+
+                    # The value will be positive only if [cdx] and [dx] have the same sign
+                    # which means they are pointing to the same direction
+                    if cdx * dx > 0:
+                        rook = cpiece
+                        break
+
+            rook.position = (piece.position[0], piece.position[1] - direction)
 
     def move(self, piece: Piece, destination: Tuple[int, int]):
         origin = super().move(piece, destination)
 
-        self.__apply_en_passant(piece, origin, destination)
+        self.__apply_en_passant(piece, origin)
+        self.__apply_castling(piece, origin)
 
     def clear(self):
         self.turn = None
