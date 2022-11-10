@@ -65,11 +65,24 @@ class ChessBoard(Board):
 
             rook.position = (piece.position[0], piece.position[1] - direction)
 
+    def __apply_promotion(self, piece: Piece):
+        promotion_row = 7 if piece.color is Color.WHITE else 0
+
+        if isinstance(piece, Pawn) and piece.position[0] == promotion_row:
+
+            # TODO: Add the possibility to choose the type of piece to promote to
+
+            promoted = Queen(piece.color, piece.position)
+            promoted.first_move = False
+            piece.position = None
+            self.pieces.append(promoted)
+
     def move(self, piece: Piece, destination: Tuple[int, int]):
         origin = super().move(piece, destination)
 
         self.__apply_en_passant(piece, origin)
         self.__apply_castling(piece, origin)
+        self.__apply_promotion(piece)
 
     def clear(self):
         self.turn = None
