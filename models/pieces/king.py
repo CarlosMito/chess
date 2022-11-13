@@ -19,7 +19,6 @@ class King(Piece):
     def get_moves(self, board):
         moves = super().get_moves(board)
 
-        # [CASTLING]
         if self.first_move:
 
             # TODO: Disable castling when an enemy is striking the path between the King and the Rook

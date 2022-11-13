@@ -45,6 +45,9 @@ class Piece(ABC):
 
         moves = []
 
+        if self.position is None:
+            return moves
+
         allies = [other.position for other in board.pieces if other.color == self.color]
         enemies = [other.position for other in board.pieces if other.color != self.color]
 

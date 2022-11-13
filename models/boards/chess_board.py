@@ -2,6 +2,7 @@ from .board import Board
 from typing import Tuple
 from models.pieces.piece import Color, Piece
 from models.pieces import Pawn, Rook, Knight, Bishop, Queen, King
+import copy
 
 
 class ChessBoard(Board):
@@ -23,6 +24,16 @@ class ChessBoard(Board):
             blacks = [Pawn(Color.BLACK, (6, index)), default[index](Color.BLACK, (7, index))]
 
             self.pieces += whites + blacks
+
+    def in_check(self, color: Color):
+        enemies = [piece for piece in self.pieces if piece.color == color.opposite]
+        king = next(piece for piece in self.pieces if isinstance(piece, King) and piece.color == color)
+
+        for enemy in enemies:
+            if king.position in enemy.get_moves(self):
+                return True
+
+        return False
 
     def __apply_en_passant(self, piece: Piece, origin: Tuple[int, int]):
 
@@ -78,11 +89,24 @@ class ChessBoard(Board):
             self.pieces.append(promoted)
 
     def move(self, piece: Piece, destination: Tuple[int, int]):
+        backup = copy.deepcopy(self.pieces)
+        # I can prevent moves that causes check to the own player by 2 different ways
+        # 1 - My first idea is to create a deep copy of [self.pieces], then set the attribute
+        #     value to the copy if the movement caused check to its own king. It's easier,
+        #     but to the player is worst because the squares appears as a possible movement.
+        # 2 - When calculating the possible moves, analyse if the movement causes check to
+        #     the king, if it does, don't append to the list of possible moves.
+
+        backup = copy.deepcopy(self.pieces)
+
         origin = super().move(piece, destination)
 
         self.__apply_en_passant(piece, origin)
         self.__apply_castling(piece, origin)
         self.__apply_promotion(piece)
+
+        if self.in_check(piece.color):
+            self.pieces = backup
 
     def clear(self):
         self.turn = None
