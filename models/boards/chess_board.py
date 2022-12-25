@@ -64,7 +64,8 @@ class ChessBoard(Board):
         king = self.get_king(color)
         moves = []
 
-        if not attackers:
+        # If the king can move nor there's no attackers, so it's not checkmate
+        if king.get_moves(self) or not attackers:
             return False
 
         for ally in allies:
@@ -72,11 +73,6 @@ class ChessBoard(Board):
                 moves += ally.get_moves(self)
 
         moves = set(moves)
-
-        # If the king can move, so it's not checkmate
-        for move in king.get_moves(self):
-            if self.move(king, move, True):
-                return False
 
         # When a double check happens, it's impossible to
         # capture both pieces nor defend from both directions

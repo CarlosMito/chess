@@ -116,6 +116,8 @@ class ChessMoveCalculator:
 
     def __filter_moves(piece: Piece, board: ChessBoard, moves: List[Tuple[int, int]]):
 
+        backup = copy.copy(board.last)
+
         def causes_check(move):
             board.move(piece, move)
 
@@ -127,6 +129,7 @@ class ChessMoveCalculator:
             return True
 
         filtered = list(filter(causes_check, moves))
+        board.last = backup
 
         return filtered
 
