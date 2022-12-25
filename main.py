@@ -25,6 +25,18 @@ from models.pieces.rook import Rook
 # TODO: Change all rules [castling, en passant] to Board/Piece class [OK]
 
 
+# Chess Annotations
+# Check has + sign -> example: e6+ (moves pawn to e6 and causes check)
+# the capture is x ->  example: nxe5 (knight captures a piece in e5)
+
+# hxg6 -> pawn capture
+# e.p. -> optional
+# a checkmate move has the symbol # at the end > example: hxg6# -> (en passant that delivers checkmate)
+# king side castling 0-0
+# queen side castling 0-0-0
+# Nbd2 -> ambigous positions needs to have the starting piece file (column) / rank (row) before the final square
+# R4a5
+
 # class Phone:
 #     def __init__(self, OS) -> None:
 #         self.OS = OS

@@ -26,12 +26,18 @@ class ChessBoard(Board):
 
             self.pieces += whites + blacks
 
+    def get_king(self, color: Color) -> King:
+        return next(piece for piece in self.pieces if isinstance(piece, King) and piece.color == color)
+
     def get_pieces(self, color: Color) -> List[Piece]:
         return [piece for piece in self.pieces if piece.color == color]
 
+    def get_squares(self, color: Color) -> List[Tuple[int, int]]:
+        return [piece.position for piece in self.pieces if piece.color == color]
+
     def in_check(self, color: Color) -> bool:
         enemies = self.get_pieces(color.opposite)
-        king = next(piece for piece in self.pieces if isinstance(piece, King) and piece.color == color)
+        king = self.get_king(color)
 
         for enemy in enemies:
             if king.position in enemy.get_moves(self):
@@ -41,10 +47,13 @@ class ChessBoard(Board):
 
     def get_attackers(self, color: Color) -> List[Piece]:
         enemies = self.get_pieces(color.opposite)
-        king = next(piece for piece in self.pieces if isinstance(piece, King) and piece.color == color)
+        king = self.get_king(color)
         attackers = []
 
         for enemy in enemies:
+            if isinstance(enemy, Queen):
+                pass
+            moves = enemy.get_moves(self)
             if king.position in enemy.get_moves(self):
                 attackers.append(enemy)
 
@@ -53,22 +62,40 @@ class ChessBoard(Board):
     def is_checkmate(self, color: Color) -> bool:
         allies = self.get_pieces(color)
         attackers = self.get_attackers(color)
+        king = self.get_king(color)
         moves = []
 
+        if not attackers:
+            return False
+
         for ally in allies:
-            moves += ally.get_moves()
+            if not isinstance(ally, King):
+                moves += ally.get_moves(self)
 
         moves = set(moves)
 
-        # When a double check happens, it's impossible to capture
-        # both pieces nor defend more than one path.
+        # If the king can move, so it's not checkmate
+        for move in king.get_moves(self):
+            if self.move(king, move, True):
+                return False
 
-        for attacker in attackers:
-            # Verify if the piece can be taken
-            if attacker.position in moves:
-                pass
+        # When a double check happens, it's impossible to
+        # capture both pieces nor defend from both directions
+        if len(attackers) > 1:
+            return True
 
-        print("CHECKMATE!")
+        attacker = attackers[0]
+
+        # Verify if the piece can be taken
+        if attacker.position in moves:
+            return False
+
+        # Verify if an ally can defend the attack
+        if not isinstance(attacker, Knight):
+            for move in attacker.get_moves(self):
+                if not move == king.position and move in moves:
+                    return False
+
         return True
 
     def __apply_en_passant(self, piece: Piece, origin: Tuple[int, int]):
@@ -124,10 +151,9 @@ class ChessBoard(Board):
             piece.position = None
             self.pieces.append(promoted)
 
-    def move(self, piece: Piece, destination: Tuple[int, int]):
+    def move(self, piece: Piece, destination: Tuple[int, int], is_calculating: bool = False) -> bool:
 
         backup = copy.deepcopy(self.pieces)
-
         origin = super().move(piece, destination)
 
         self.__apply_en_passant(piece, origin)
@@ -136,6 +162,14 @@ class ChessBoard(Board):
 
         if self.in_check(piece.color):
             self.pieces = backup
+            return False
+
+        if is_calculating:
+            self.pieces = backup
+        elif self.is_checkmate(piece.color.opposite):
+            print("CHECKAMTE!")
+
+        return True
 
     def clear(self):
         self.turn = None

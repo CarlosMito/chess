@@ -35,42 +35,8 @@ class Piece(ABC):
         return f"{colorname[0]}{piecename[0]}"
 
     def get_moves(self, board):
-        """
-        Params
-        ------
-
-        - pieces : A list of all the other pieces on the board.
-        - limit : Corresponds to the board size the piece is on.
-        """
-
-        moves = []
-
-        if self.position is None:
-            return moves
-
-        allies = [other.position for other in board.pieces if other.color == self.color]
-        enemies = [other.position for other in board.pieces if other.color != self.color]
-
-        for movement in self.movements:
-
-            square = (self.position[0] + movement[0], self.position[1] + movement[1])
-            blocked = False
-            counter = 1
-
-            while (counter == 1 or self.infinite) and not blocked:
-                i = self.position[0] + movement[0] * counter
-                j = self.position[1] + movement[1] * counter
-
-                square = (i, j)
-                inside = board.is_inside(square)
-                blocked = (square in allies + enemies) or not inside
-
-                if inside and square not in allies:
-                    moves.append(square)
-
-                counter += 1
-
-        return moves
+        from models.rules import ChessMoveCalculator
+        return ChessMoveCalculator.get_moves(self, board)
 
     def __str__(self) -> str:
         piecename = self.__class__.__name__
