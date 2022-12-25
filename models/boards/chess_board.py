@@ -161,19 +161,11 @@ class ChessBoard(Board):
 
     def move(self, piece: Piece, destination: Tuple[int, int], is_calculating: bool = False) -> bool:
 
-        # backup = copy.deepcopy(self.pieces)
         origin = super().move(piece, destination)
 
         self.__apply_en_passant(piece, origin)
         self.__apply_castling(piece, origin)
         self.__apply_promotion(piece)
-
-        # if self.in_check(piece.color):
-        #     self.pieces = backup
-        #     return False
-
-        # if is_calculating:
-        # self.pieces = backup
 
         # Put this somewhere else, because this method will be called several times in a row
         # if self.is_checkmate(piece.color.opposite):

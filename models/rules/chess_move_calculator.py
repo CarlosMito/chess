@@ -140,7 +140,7 @@ class ChessMoveCalculator:
 
         moves = controller[type(piece)](piece, board)
 
-        # if verify_check:
-        #     moves = ChessMoveCalculator.__filter_moves(piece, board, moves)
+        if verify_check:
+            moves = ChessMoveCalculator.__filter_moves(piece, board, moves)
 
         return moves
