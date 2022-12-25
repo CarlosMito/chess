@@ -123,6 +123,9 @@ class BoardSurface:
             if self.board.is_checkmate(self.__selected.color.opposite):
                 print("CHECKAMTE!")
 
+            if self.board.is_stalemate(self.__selected.color.opposite):
+                print("STALEMATE!")
+
             self.__selected = None
 
     def draw_moves(self):

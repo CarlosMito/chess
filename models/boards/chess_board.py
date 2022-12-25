@@ -39,8 +39,6 @@ class ChessBoard(Board):
         enemies = self.get_pieces(color.opposite)
         king = self.get_king(color)
 
-        # print(self, end="\n\n")
-
         for enemy in enemies:
             if king.position in enemy.get_moves(self, verify_check=False):
                 return True
@@ -58,40 +56,25 @@ class ChessBoard(Board):
 
         return attackers
 
-    def is_checkmate(self, color: Color) -> bool:
+    def possible_moves(self, color: Color):
         allies = self.get_pieces(color)
-        attackers = self.get_attackers(color)
-        king = self.get_king(color)
-        moves = []
-
-        # If the king can move nor there's no attackers, so it's not checkmate
-        if king.get_moves(self) or not attackers:
-            return False
+        moves = {}
 
         for ally in allies:
-            if not isinstance(ally, King):
-                moves += ally.get_moves(self)
+            auxiliar = ally.get_moves(self)
 
-        moves = set(moves)
+            if auxiliar:
+                moves[ally] = auxiliar
 
-        # When a double check happens, it's impossible to
-        # capture both pieces nor defend from both directions
-        if len(attackers) > 1:
-            return True
+        return moves
 
-        attacker = attackers[0]
+    def is_checkmate(self, color: Color) -> bool:
+        moves = self.possible_moves(color)
+        return len(moves) == 0 and self.in_check(color)
 
-        # Verify if the piece can be taken
-        if attacker.position in moves:
-            return False
-
-        # Verify if an ally can defend the attack
-        if not isinstance(attacker, Knight):
-            for move in attacker.get_moves(self):
-                if not move == king.position and move in moves:
-                    return False
-
-        return True
+    def is_stalemate(self, color: Color) -> bool:
+        moves = self.possible_moves(color)
+        return len(moves) == 0 and not self.in_check(color)
 
     def __apply_en_passant(self, piece: Piece, origin: Tuple[int, int]):
 
@@ -130,7 +113,7 @@ class ChessBoard(Board):
             rook = None
 
             for cpiece in self.pieces:
-                if cpiece.color == piece.color and isinstance(cpiece, Rook):
+                if cpiece.color == piece.color and isinstance(cpiece, Rook) and cpiece.position is not None:
                     cdx = cpiece.position[1] - origin[1]
 
                     # The value will be positive only if [cdx] and [dx] have the same sign
@@ -162,10 +145,6 @@ class ChessBoard(Board):
         self.__apply_en_passant(piece, origin)
         self.__apply_castling(piece, origin)
         self.__apply_promotion(piece)
-
-        # Put this somewhere else, because this method will be called several times in a row
-        # if self.is_checkmate(piece.color.opposite):
-        #     print("CHECKAMTE!")
 
         return True
 

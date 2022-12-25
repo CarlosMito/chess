@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple
+from typing import Tuple, List
 from enum import Enum
 from abc import ABC, abstractmethod
 
@@ -34,7 +34,7 @@ class Piece(ABC):
         colorname = str(self.color)
         return f"{colorname[0]}{piecename[0]}"
 
-    def get_moves(self, board, verify_check=True):
+    def get_moves(self, board, verify_check=True) -> List[Tuple[int, int]]:
         from models.rules import ChessMoveCalculator
         return ChessMoveCalculator.get_moves(self, board, verify_check)
 

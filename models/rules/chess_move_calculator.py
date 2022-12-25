@@ -23,7 +23,7 @@ class ChessMoveCalculator:
             # TODO: Disable castling when an enemy is attacking the King or the path between the King and the Rook
 
             allies = [other for other in board.pieces if other.color == king.color]
-            rooks = [piece for piece in allies if isinstance(piece, Rook)]
+            rooks = [piece for piece in allies if isinstance(piece, Rook) and piece.position is not None]
             occupied_squares = [other.position for other in board.pieces]
 
             for rook in rooks:
@@ -114,7 +114,7 @@ class ChessMoveCalculator:
 
         return moves
 
-    def __filter_moves(piece: Piece, board: ChessBoard, moves: List[Tuple[int, int]]):
+    def __filter_moves(piece: Piece, board: ChessBoard, moves: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
 
         backup = copy.copy(board.last)
 
@@ -134,7 +134,7 @@ class ChessMoveCalculator:
         return filtered
 
     @staticmethod
-    def get_moves(piece: Piece, board: ChessBoard, verify_check=True):
+    def get_moves(piece: Piece, board: ChessBoard, verify_check=True) -> List[Tuple[int, int]]:
 
         controller = defaultdict(lambda: ChessMoveCalculator.__get_moves_base)
 
