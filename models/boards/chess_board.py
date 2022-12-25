@@ -100,11 +100,11 @@ class ChessBoard(Board):
     def __apply_en_passant(self, piece: Piece, origin: Tuple[int, int]):
 
         # Remove pawn if the movement is En Passant
-        if self.en_passant["square"] == piece.position:
+        if isinstance(piece, Pawn) and self.en_passant["square"] == piece.position:
             x = 3 if self.en_passant["color"] is Color.WHITE else 4
             captured = (x, piece.position[1])
 
-            for cpiece in self.pieces:
+            for cpiece in self.get_pieces(piece.color.opposite):
                 if cpiece.position == captured:
                     self.last[cpiece] = captured
                     cpiece.position = None
