@@ -120,8 +120,10 @@ class ChessMoveCalculator:
             board.move(piece, move)
 
             if board.in_check(piece.color):
+                board.undo()
                 return False
 
+            board.undo()
             return True
 
         filtered = list(filter(causes_check, moves))

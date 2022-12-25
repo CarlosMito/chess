@@ -182,7 +182,6 @@ class ChessBoard(Board):
         return True
 
     def undo(self):
-        print("[UNDO]")
 
         if "first_move" in self.last:
             piece = self.last["piece_moved"]
@@ -200,8 +199,6 @@ class ChessBoard(Board):
                     continue
 
                 piece.position = self.last[piece]
-
-        print(len(self.pieces))
 
     def clear(self):
         self.turn = None
