@@ -1,13 +1,21 @@
+import copy
+from typing import List, Tuple
+from collections import defaultdict
+
 from models.boards.chess_board import ChessBoard
-from models.pieces import Piece, Pawn, King, Rook
+from models.pieces.piece import Piece
+from models.pieces import Pawn, King, Rook
 
 
 class ChessMoveCalculator:
 
     @staticmethod
-    def __get_moves_king(king: King, board: ChessBoard):
+    def __get_moves_king(king: King, board: ChessBoard) -> List[Tuple[int, int]]:
 
         moves = ChessMoveCalculator.__get_moves_base(king, board)
+
+        if king.position is None:
+            return moves
 
         # [Castling]
         if king.first_move:
@@ -35,7 +43,7 @@ class ChessMoveCalculator:
         return moves
 
     @staticmethod
-    def __get_moves_pawn(pawn: Pawn, board: ChessBoard):
+    def __get_moves_pawn(pawn: Pawn, board: ChessBoard) -> List[Tuple[int, int]]:
 
         moves = []
 
@@ -75,7 +83,7 @@ class ChessMoveCalculator:
         return moves
 
     @staticmethod
-    def __get_moves_base(piece: Piece, board: ChessBoard):
+    def __get_moves_base(piece: Piece, board: ChessBoard) -> List[Tuple[int, int]]:
 
         moves = []
 
@@ -106,13 +114,31 @@ class ChessMoveCalculator:
 
         return moves
 
+    def __filter_moves(piece: Piece, board: ChessBoard, moves: List[Tuple[int, int]]):
+
+        def causes_check(move):
+            board.move(piece, move)
+
+            if board.in_check(piece.color):
+                return False
+
+            return True
+
+        filtered = list(filter(causes_check, moves))
+
+        return filtered
+
     @staticmethod
-    def get_moves(piece: Piece, board: ChessBoard):
+    def get_moves(piece: Piece, board: ChessBoard, verify_check=True):
 
-        if isinstance(piece, King):
-            return ChessMoveCalculator.__get_moves_king(piece, board)
+        controller = defaultdict(lambda: ChessMoveCalculator.__get_moves_base)
 
-        if isinstance(piece, Pawn):
-            return ChessMoveCalculator.__get_moves_pawn(piece, board)
+        controller[King] = ChessMoveCalculator.__get_moves_king
+        controller[Pawn] = ChessMoveCalculator.__get_moves_pawn
 
-        return ChessMoveCalculator.__get_moves_base(piece, board)
+        moves = controller[type(piece)](piece, board)
+
+        # if verify_check:
+        #     moves = ChessMoveCalculator.__filter_moves(piece, board, moves)
+
+        return moves

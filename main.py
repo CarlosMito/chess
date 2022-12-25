@@ -4,6 +4,8 @@ from interface.surfaces import BoardSurface
 # from game.surfaces import *
 # from utils.matrix import *
 
+from collections import defaultdict
+
 from models import Pawn
 from models.boards.board import Board
 from models.boards.chess_board import ChessBoard
@@ -73,14 +75,19 @@ def play():
                     surface.board.reset()
                     surface.update()
 
+                if event.key == pygame.K_z:
+                    surface.board.undo()
+                    surface.update()
+
         pygame.display.flip()
 
     pygame.quit()
 
 
 def debug():
-    print(ChessBoard())
-    print(Color(-1).opposite)
+    # print(ChessBoard())
+    # print(Color(-1).opposite)
+    pass
 
 
 if __name__ == '__main__':

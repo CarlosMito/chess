@@ -34,9 +34,9 @@ class Piece(ABC):
         colorname = str(self.color)
         return f"{colorname[0]}{piecename[0]}"
 
-    def get_moves(self, board):
+    def get_moves(self, board, verify_check=True):
         from models.rules import ChessMoveCalculator
-        return ChessMoveCalculator.get_moves(self, board)
+        return ChessMoveCalculator.get_moves(self, board, verify_check)
 
     def __str__(self) -> str:
         piecename = self.__class__.__name__

@@ -12,6 +12,7 @@ class Board(ABC):
         self.pieces: List[Piece] = []
         self.running: bool = False
         self.turn: int = 0
+        self.last: dict = {}
 
     @abstractmethod
     def reset(self):
@@ -36,13 +37,23 @@ class Board(ABC):
 
     def move(self, piece: Piece, destination: Tuple[int, int]):
 
+        self.last = {
+            piece: piece.position,
+            "piece_moved": piece
+        }
+
         origin = piece.position
 
         for other in self.pieces:
             if other.position == destination:
+                self.last[other] = destination
                 other.position = None
 
         piece.position = destination
+
+        if piece.first_move:
+            self.last["first_move"] = True
+
         piece.first_move = False
 
         return origin

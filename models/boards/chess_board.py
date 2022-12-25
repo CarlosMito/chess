@@ -1,9 +1,9 @@
+import copy
+from typing import List, Tuple
+
 from .board import Board
-from typing import Tuple
 from models.pieces.piece import Color, Piece
 from models.pieces import Pawn, Rook, Knight, Bishop, Queen, King
-import copy
-from typing import List
 
 
 class ChessBoard(Board):
@@ -39,8 +39,10 @@ class ChessBoard(Board):
         enemies = self.get_pieces(color.opposite)
         king = self.get_king(color)
 
+        # print(self, end="\n\n")
+
         for enemy in enemies:
-            if king.position in enemy.get_moves(self):
+            if king.position in enemy.get_moves(self, verify_check=False):
                 return True
 
         return False
@@ -51,9 +53,6 @@ class ChessBoard(Board):
         attackers = []
 
         for enemy in enemies:
-            if isinstance(enemy, Queen):
-                pass
-            moves = enemy.get_moves(self)
             if king.position in enemy.get_moves(self):
                 attackers.append(enemy)
 
@@ -107,9 +106,16 @@ class ChessBoard(Board):
 
             for cpiece in self.pieces:
                 if cpiece.position == captured:
+                    self.last[cpiece] = captured
                     cpiece.position = None
 
-        # En Passant Rule. The pawn must be captured immediately after the two-square advance.
+        self.last["en_passant"] = {
+            "color": self.en_passant["color"],
+            "square": self.en_passant["square"]
+        }
+
+        # [En Passant]
+        # The pawn must be captured immediately after the two-square advance.
         # So there's no need to store the square for both players.
         self.en_passant = {"color": None, "square": None}
         dy = piece.position[0] - origin[0]
@@ -137,6 +143,7 @@ class ChessBoard(Board):
                         rook = cpiece
                         break
 
+            self.last[rook] = rook.position
             rook.position = (piece.position[0], piece.position[1] - direction)
 
     def __apply_promotion(self, piece: Piece):
@@ -147,29 +154,54 @@ class ChessBoard(Board):
             # TODO: Add the possibility to choose the type of piece to promote to
 
             promoted = Queen(piece.color, piece.position)
+            self.last[promoted] = None
             promoted.first_move = False
             piece.position = None
             self.pieces.append(promoted)
 
     def move(self, piece: Piece, destination: Tuple[int, int], is_calculating: bool = False) -> bool:
 
-        backup = copy.deepcopy(self.pieces)
+        # backup = copy.deepcopy(self.pieces)
         origin = super().move(piece, destination)
 
         self.__apply_en_passant(piece, origin)
         self.__apply_castling(piece, origin)
         self.__apply_promotion(piece)
 
-        if self.in_check(piece.color):
-            self.pieces = backup
-            return False
+        # if self.in_check(piece.color):
+        #     self.pieces = backup
+        #     return False
 
-        if is_calculating:
-            self.pieces = backup
-        elif self.is_checkmate(piece.color.opposite):
-            print("CHECKAMTE!")
+        # if is_calculating:
+        # self.pieces = backup
+
+        # Put this somewhere else, because this method will be called several times in a row
+        # if self.is_checkmate(piece.color.opposite):
+        #     print("CHECKAMTE!")
 
         return True
+
+    def undo(self):
+        print("[UNDO]")
+
+        if "first_move" in self.last:
+            piece = self.last["piece_moved"]
+            piece.first_move = True
+            del self.last["first_move"], self.last["piece_moved"]
+
+        if "en_passant" in self.last:
+            self.en_passant = self.last["en_passant"]
+            del self.last["en_passant"]
+
+        for piece in self.pieces:
+            if piece in self.last:
+                if self.last[piece] is None:
+                    self.pieces.remove(piece)
+                    continue
+
+                piece.position = self.last[piece]
+
+        print(len(self.pieces))
 
     def clear(self):
         self.turn = None
