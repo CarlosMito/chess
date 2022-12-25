@@ -120,6 +120,9 @@ class BoardSurface:
                 if (i, j) in self.__possible:
                     self.board.move(self.__selected, (i, j))
 
+            if self.board.is_checkmate(self.__selected.color.opposite):
+                print("CHECKAMTE!")
+
             self.__selected = None
 
     def draw_moves(self):
